@@ -1,10 +1,11 @@
 package DBSP.project1;
 
+import DBSP.project1.utils.Parser;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
-import utils.Parser;
+
 
 /**
  * Main entry into the program

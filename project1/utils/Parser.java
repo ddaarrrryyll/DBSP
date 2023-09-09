@@ -1,46 +1,53 @@
 package DBSP.project1.utils;
 
+import DBSP.project1.indexComponent.BPlusTree;
 import java.util.Scanner;
 
 import java.io.*;
 
-import storageComponent.Address;
-import storageComponent.Record;
-import storageComponent.Disk;
+import DBSP.project1.storageComponent.Address;
+import DBSP.project1.storageComponent.Record;
+import DBSP.project1.storageComponent.Database;
 
-import indexComponent.*;
+import DBSP.project1.indexComponent.*;
 
 public class Parser {
     public static final int BLOCK_SIZE = 400;
     public static final int OVERHEAD = 8;
-    public static final int POINTER_SIZE = 8; //for 64-bit systems
-    public static final int KEY_SIZE = 4; //Integer datatype
+    public static final int POINTER_SIZE = 8; // for 64-bit systems
+    public static final int KEY_SIZE = 4; // Integer datatype
     private static int counter = 0;
 
     public static void readTSVFile(String filePath, int diskCapacity) {
         try {
             String line;
             // initialise database
-            Disk db = new Disk(diskCapacity, BLOCK_SIZE);
+            Database db = new Database(diskCapacity, BLOCK_SIZE);
             // start loading data
             BufferedReader reader = new BufferedReader(new FileReader(filePath));
             reader.readLine(); // skip the first line (the column line)
 
             // initialise a new B+ tree
-            BplusTree tree = new BplusTree();
+            BPlusTree tree = new BPlusTree();
 
             while ((line = reader.readLine()) != null) {
                 counter++;
                 if (counter % 100000 == 0)
                     System.out.println(counter + " data rows read");
                 String[] fields = line.split("\t");
-                int teamID = fields[1];
+                // ! int teamID = fields[1]; // Idk how to fix this, commenting out for now
                 float FG_PCT_home = Float.parseFloat(fields[3]);
                 float FG3_PCT_home = Float.parseFloat(fields[5]);
+
+                /*
                 Record rec = createRecord(teamID, FG_PCT_home, FG3_PCT_home);
                 Address add = db.writeRecordToStorage(rec);
                 int key = rec.getNumVotes();
                 tree.insertKey(key, add);
+                
+                Temperoraily commented out to test the B+ tree
+                */ 
+
             }
             reader.close();
 
@@ -64,7 +71,8 @@ public class Parser {
                         System.out.println("\nPlease only input 1-5!");
                     }
                 }
-
+                
+                /*
                 switch (index) {
                     case 1:
                         db.experimentOne();
@@ -82,6 +90,7 @@ public class Parser {
                         BplusTree.experimentFive(db, tree);
                         break;
                 }
+                */
 
             } catch (Exception e) {
 
@@ -102,7 +111,7 @@ public class Parser {
      * @param FG3_PCT_home  number of votes the title has received
      */
     public static Record createRecord(int teamID, float FG_PCT_home, float FG3_PCT_home) {
-        Record rec = new Record(teamID, FG_PCT_home, FG3_PCT_home);
+        Record rec = new Record();
         return rec;
     }
 
