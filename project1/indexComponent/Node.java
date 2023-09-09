@@ -257,6 +257,9 @@ public class Node {
     public int getKeyAt(int index) {
         return this.keys.get(index);
     }
+    public int getLastKey() {
+        return this.keys.get(keys.size() - 1);
+    }
     public void insertKeyAt(int index, int key) {
         keys.add(index, key);
     }

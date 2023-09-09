@@ -241,7 +241,7 @@ public class BPlusTree {
             } else {
                 InternalNode currParent = currNode.getRightSibling().getParent();
                 currParent.removeChild(currNode);
-                if ((currParent.getKeySize() > currParent.getMinInternalNodeSize()) && (currParent.getchildren().size() > currNode.getMinInternalNodeSize())) {
+                if ((currParent.getKeySize() > currParent.getMinInternalNodeSize()) && (currParent.getChildren().size() > currNode.getMinInternalNodeSize())) {
                     currParent.removeKeyAt(0);
                 }
             }
@@ -261,14 +261,102 @@ public class BPlusTree {
     }
 
     private void mergeInternalNodes (InternalNode targetNode, InternalNode currNode, InternalNode parent, int rightPointerIdx, int inBetweenKeyIdx, boolean mergeWithLeft) {
-        // TODO  line 573
+        int targetKey;
+        int moveKeyCount = currNode.getKeySize();
+        if (mergeWithLeft) {
+            targetKey = targetNode.getChild(targetNode.getKeySize()).getLastKey();
+            for (int i = 0; i < moveKeyCount; i++) {
+                targetNode.getKeys().add(targetNode.getKeySize(), currNode.getKeyAt(i));
+            }
+            for (int i = 0; i < currNode.getChildren().size(); i++) {
+                targetNode.getChildren().add(currNode.getChild(i));
+            }
+            targetNode.getKeys().add(targetNode.getKeySize(), targetNode.getChild(targetNode.getKeySize()+1).getKeyAt(0));
+            currNode.getParent().removeChild(currNode);
+        } else {
+            targetKey = currNode.getKeyAt(0);
+            for (int i = 0; i < moveKeyCount; i++) {
+                targetNode.getKeys().add(0, currNode.getKeyAt(i));
+            }
+            for (int i = 0; i < currNode.getChildren().size(); i++) {
+                targetNode.getChildren().add(currNode.getChild(i));
+            }
+            targetNode.getKeys().add(0, targetNode.getChild(1).getKeyAt(0));
+            currNode.getParent().removeChild(currNode);
+        }
+
+        int pointerIdx = targetNode.searchKeyIndex(targetKey, true);
+        int keyIdx = pointerIdx - 1;
+
+        InternalNode iNode = (InternalNode) targetNode;
+        int lowerbound = lowerbound(targetKey);
+        int newLB = 0;
+        if (iNode.getKeySize() >= (keyIdx + 1)) {
+            newLB = lowerbound;
+        } else {
+            newLB = lowerbound(iNode.getKeyAt(keyIdx+1));
+            parent.updateKey(inBetweenKeyIdx-1, targetKey, false, lowerbound(targetKey));
+        }
     }
 
     private void moveOneKeyLeaf(LeafNode donor, LeafNode receiver, boolean leftDonor, InternalNode parent, int inBetweenKeyIdx) {
-        // TODO line 772
+        int key;
+        if (leftDonor) {
+            int donorKey = donor.getKeyAt(donor.getKeySize()-1);
+            receiver.insertByRedistribution(donorKey, donor.getAddressesForKey(donorKey));
+            donor.removeKeyFromMap(donorKey);
+
+            receiver.insertKeyAt(0, donorKey);
+            donor.removeKeyAt(donor.getKeySize()-1);
+            key = donor.getKeyAt(0);
+        } else {
+            int donorKey = donor.getKeyAt(0);
+            receiver.insertByRedistribution(donorKey, donor.getAddressesForKey(donorKey));
+            donor.removeKeyFromMap(donorKey);
+
+            receiver.insertKeyAt(receiver.getKeySize(), donorKey);
+            donor.removeKeyAt(0);
+            key = donor.getKeyAt(0);
+        }
+
+        if (inBetweenKeyIdx == -1) {
+            // pass
+        } else if (inBetweenKeyIdx >= 0) {
+            if (parent.getKeySize() == inBetweenKeyIdx) {
+                parent.replaceKeyAt(inBetweenKeyIdx-1, key);
+
+                int lastParentChild = donor.getParent().getKeySize() - 1;
+                int lastParentChildKey = donor.getParent().getChild(donor.getParent().getKeySize()).getKeyAt(0);
+                if (donor.getParent().getChild(donor.getParent().getChildren().size() - 1).getKeyAt(0) != key) {
+                    receiver.getParent().replaceKeyAt(lastParentChild, lastParentChildKey);
+                }
+            } else {
+                parent.replaceKeyAt(inBetweenKeyIdx, key);
+                if (donor.getParent().getChild(inBetweenKeyIdx+1).getKeyAt(0) != key) {
+                    donor.getParent().replaceKeyAt(inBetweenKeyIdx, donor.getParent().getChild(inBetweenKeyIdx+1).getKeyAt(0));
+                }
+            }
+        } else {
+            parent.replaceKeyAt(inBetweenKeyIdx-1, key);
+            
+        }
+
+        int pointerIdx = receiver.searchKeyIndex(key, true);
+        int keyIdx = pointerIdx-1;
+
+        LeafNode leafNode = (LeafNode) receiver;
+        int lowerbound = lowerbound(key);
+        int newLB = 0;
+
+        if (leafNode.getKeySize() >= (keyIdx + 1)) {
+            newLB = lowerbound;
+        } else {
+            newLB = lowerbound(leafNode.getKeyAt(keyIdx+1));
+            parent.updateKey(inBetweenKeyIdx-1, parent.getChild(inBetweenKeyIdx).getKeyAt(0), false, lowerbound(key));
+        }
     }
 
-    private void moveOneKeyInternal() {
+    private void moveOneKeyInternal(InternalNode donor, InternalNode receiver, boolean leftDonor, InternalNode parent, int inBetweenKeyIdx) {
         // TODO line 498
     }
 
