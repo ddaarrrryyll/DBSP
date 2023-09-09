@@ -16,7 +16,7 @@ class Block {
     // make constructor that takes in record array and set to this.records
 }
 
-class Record {
+public class Record {
     // declare byte array for each column according to specs (date should be 4 bytes or less, rmb to stay within 25bytes)
     // make constructor to take in the values in each column so Database obj can call
 }
