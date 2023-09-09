@@ -1,4 +1,6 @@
-package DBSP.project1;
+package DBSP.project1.storageComponent;
+
+// fuk it guys just take from here https://github.com/Chihui8199/CZ4031-Project-1/blob/main/CZ4031%20Project%201%20Code/
 
 public class Database {
     private Block[] database = new Block[262144];
