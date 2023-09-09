@@ -32,7 +32,7 @@ public class Node {
         newParent.keys = new ArrayList<Integer>();
         newParent.addChild(this);
         newParent.addChild(node);
-        newParent.keys.add(node.getKeyFromIndex(0));
+        newParent.keys.add(node.getKeyAt(0));
         this.setParent(newParent);
         node.setParent(newParent);
     }
@@ -77,17 +77,100 @@ public class Node {
     }
 
     public void splitLeafNode(int key, Address addr) {
-        // TODO
+        LeafNode newNode = this.splitAndDistributeLeaf(key, addr);
+        if (this.getParent() != null) {
+            this.insertNewNodeToParent(newNode);
+            if (this.getParent().keys.size() > NODE_SIZE) {
+                this.getParent().splitInternalNode();
+            }
+        } else {
+            this.createNode(newNode);
+        }
     }
 
     public void splitInternalNode() {
-        // TODO
+        InternalNode newParent = this.splitAndDistributeInternal();
+        if (this.getParent() != null) {
+            insertChild(this.getParent(), newParent);
+            newParent.setParent(this.getParent());
+            insertKey(this.getParent().keys, newParent.getKeyAt(0));
+            newParent.keys.remove(0);
+            if (this.getParent().keys.size() > NODE_SIZE) {
+                this.getParent().splitInternalNode();
+            }
+        } else {
+            InternalNode newRoot = new InternalNode();
+            BPTHelper.addNode();
+            newRoot.keys = new ArrayList<Integer>();
+            newRoot.keys.add(newParent.getKeyAt(0));
+            newParent.keys.remove(0);
+
+            newRoot.addChild(this);
+            newRoot.addChild(newParent);
+            this.setParent(newRoot);
+            newParent.setParent(newRoot);
+            BPlusTree.setRoot(newRoot);
+        }
     }
-    public LeafNode splitAndDistributeLeaf() {
-        // TODO
+    public LeafNode splitAndDistributeLeaf(int key, Address addr) {
+        LeafNode newNode = new LeafNode();
+        BPTHelper.addNode();
+        ((LeafNode) this).records = new ArrayList<Address>();
+        ((LeafNode) this).records.add(addr);
+        ((LeafNode) this).map.put(key, ((LeafNode) this).records);
+
+        int n = NODE_SIZE - minLeafNodeSize+1;
+        int i = 0;
+        int fromKey = 0;
+
+        for (Map.Entry<Integer, ArrayList<Address>> entry : ((LeafNode) this).map.entrySet()) {
+            if (i == n) {
+                fromKey = entry.getKey();
+                break;
+            }
+            i++;
+        }
+
+        SortedMap<Integer, ArrayList<Address>> lastnKeys = ((LeafNode) this).map.subMap(fromKey, true, ((LeafNode) this).map.lastKey(), true);
+        
+        newNode.map = new TreeMap<Integer, ArrayList<Address>>(lastnKeys);
+        lastnKeys.clear();
+        insertKey(this.keys, key);
+
+        newNode.keys = new ArrayList<Integer>(this.keys.subList(n, this.keys.size()));
+        this.keys.subList(n, this.keys.size()).clear()
+
+        if (((LeafNode) this).getRightSibling() != null) {
+            newNode.setRightSibling(((LeafNode) this).getRightSibling());
+            ((LeafNode) this).getRightSibling().setLeftSibling(newNode);
+        }
+        ((LeafNode) this).setRightSibling(newNode);
+        newNode.setLeftSibling(((LeafNode) this));
+        return newNode;
     }
+
     public InternalNode splitAndDistributeInternal() {
-        // TODO
+        InternalNode currParent = (InternalNode) this;
+        InternalNode newParent = new InternalNode();
+        BPTHelper.addNode();
+        newParent.keys = new ArrayList<Integer>();
+
+        int keyToSplitAt = currParent.getKeyAt(minInternalNodeSize);
+        for (int k = currParent.getKeySize(); k > 0; k--) {
+            if (currParent.getKeyAt(k-1) < keyToSplitAt) {
+                break;
+            }
+            int currKey = currParent.getKeyAt(k-1);
+            Node currChild = currParent.getChild(k);
+
+            newParent.children.add(0, currChild);
+            newParent.keys.add(0, currKey);
+            currChild.setParent(newParent);
+
+            currParent.removeChild(currParent.getChild(k));
+            currParent.keys.remove(k-1);
+        }
+        return newParent;
     }
 
     public int searchKeyIndex(int key, boolean upperBound) {
@@ -212,7 +295,7 @@ public class Node {
             this.setRoot(false);
             node.setRoot(true);
             node.setLeaf(false);
-            BPlusTree.setRoot = node;
+            BPlusTree.setRoot(node);
         } else {
             node.setLeaf(false);
         }
