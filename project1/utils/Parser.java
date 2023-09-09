@@ -35,12 +35,18 @@ public class Parser {
                 if (counter % 100000 == 0)
                     System.out.println(counter + " data rows read");
                 String[] fields = line.split("\t");
-                // ! int teamID = fields[1]; // Idk how to fix this, commenting out for now
-                float FG_PCT_home = Float.parseFloat(fields[3]);
-                float FG3_PCT_home = Float.parseFloat(fields[5]);
+                // need to change for game date to remove the dashes
+                int gameDateEst = Integer.parseInt(fields[0]);
+                int teamIdHome = Integer.parseInt(fields[1]);
+                byte ptsHome = Byte.parseByte(fields[2]);
+                float fgPctHome = Float.parseFloat(fields[3]);
+                float fg3PctHome = Float.parseFloat(fields[5]);
+                byte astHome = Byte.parseByte(fields[6]);
+                byte rebHome = Byte.parseByte(fields[7]);
+                byte homeTeamWins = Byte.parseByte(fields[8]);
 
                 /*
-                Record rec = createRecord(teamID, FG_PCT_home, FG3_PCT_home);
+                Record rec = createRecord(gameDateEst, teamIdHome, ptsHome, fgPctHome, fg3PctHome, astHome, rebHome, homeTeamWins);
                 Address add = db.writeRecordToStorage(rec);
                 int key = rec.getNumVotes();
                 tree.insertKey(key, add);
@@ -107,11 +113,13 @@ public class Parser {
      * database
      *
      * @param teamID        numeric unique identifier of the team
-     * @param FG_PCT_home   weighted average of all the individual user ratings
-     * @param FG3_PCT_home  number of votes the title has received
+     * @param FG_PCT_home   
+     * @param FG3_PCT_home  
      */
-    public static Record createRecord(int teamID, float FG_PCT_home, float FG3_PCT_home) {
-        Record rec = new Record();
+    public static Record createRecord(int gameDateEst, int teamIdHome, byte ptsHome, 
+                                        float fgPctHome, float fg3PctHome, 
+                                        byte astHome, byte rebHome, byte homeTeamWins) {
+        Record rec = new Record(gameDateEst, teamIdHome, ptsHome, fgPctHome, fg3PctHome, astHome, rebHome, homeTeamWins);
         return rec;
     }
 
