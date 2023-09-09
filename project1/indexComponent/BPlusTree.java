@@ -178,20 +178,41 @@ public class BPlusTree {
             moveOneKeyLeaf(leftSibling, deficientLeaf, true, parent, parentKeyIdx);
         } else if ((leftSibling != null && (leftSibling.getKeys().size() + deficientLeaf.getKeys().size()) <= NODE_SIZE
             && (numChildrenOfNodeParent >= deficientNode.getParent().getMinInternalNodeSize()))) {
-                mergeLeafNodes(leftSibling, deficientLeaf, parent, parentPointerIdx, parentKeyIdx, false);
+                mergeLeafNodes(leftSibling, deficientLeaf, parent, parentKeyIdx, false);
         } else if ((rightSibling != null && (rightSibling.getKeys().size() + deficientLeaf.getKeys().size()) <= NODE_SIZE
             && (numChildrenOfNextParent >= deficientNode.getParent().getMinInternalNodeSize()))) {
-                mergeLeafNodes(deficientLeaf, rightSibling, parent, parentPointerIdx + 1, parentKeyIdx + 1, true);
+                mergeLeafNodes(deficientLeaf, rightSibling, parent, parentKeyIdx + 1, true);
         } else {
             throw new IllegalStateException("Both leaf pointers null while not being root or no common parent not allowed");
         }
     }
 
     public void balanceInternal(Node deficientNode, InternalNode parent, int parentPointerIdx, int parentKeyIdx) throws IllegalStateException {
-        // TODO line 427
+        Node deficientINode = deficientNode;
+
+        InternalNode leftSibling = (InternalNode) parent.getChild(parentPointerIdx - 1);
+        InternalNode rightSibling = (InternalNode) parent.getChild(parentPointerIdx + 1);
+
+
+        if (rightSibling == null && leftSibling == null)
+            throw new IllegalStateException("Both leftSibling and rightSibling is null for " + deficientINode);
+
+        if (leftSibling != null && leftSibling.isLendable(NODE_SIZE)) {
+            moveOneKeyInternal(leftSibling, (InternalNode) deficientINode, true, parent, parentKeyIdx);
+
+        } else if (rightSibling != null && rightSibling.isLendable(NODE_SIZE)) {
+            moveOneKeyInternal(rightSibling, (InternalNode) deficientINode, false, parent, parentKeyIdx + 1);
+
+        } else if (leftSibling != null && (deficientINode.getKeySize() + leftSibling.getKeySize()) <= NODE_SIZE) {
+            mergeInternalNodes(leftSibling, (InternalNode) deficientINode, parent, parentKeyIdx, true);
+        } else if (rightSibling != null && (deficientINode.getKeySize() + rightSibling.getKeySize()) <= NODE_SIZE) {
+            mergeInternalNodes((InternalNode) deficientINode, rightSibling, parent, parentKeyIdx + 1, false);
+        } else {
+            throw new IllegalStateException("Can't merge or redistribute internal node " + deficientINode);
+        }
     }
 
-    private void mergeLeafNodes(LeafNode targetNode, LeafNode currNode, InternalNode parent, int rightPointerIdx, int inBetweenKeyIdx, boolean mergeToRight) {
+    private void mergeLeafNodes(LeafNode targetNode, LeafNode currNode, InternalNode parent, int inBetweenKeyIdx, boolean mergeToRight) {
         int removedKey = 0;
         int moveKeyCount = currNode.getKeys().size();
         int noChildren = currNode.getParent().getChildren().size();
@@ -260,7 +281,7 @@ public class BPlusTree {
 
     }
 
-    private void mergeInternalNodes (InternalNode targetNode, InternalNode currNode, InternalNode parent, int rightPointerIdx, int inBetweenKeyIdx, boolean mergeWithLeft) {
+    private void mergeInternalNodes (InternalNode targetNode, InternalNode currNode, InternalNode parent, int inBetweenKeyIdx, boolean mergeWithLeft) {
         int targetKey;
         int moveKeyCount = currNode.getKeySize();
         if (mergeWithLeft) {
@@ -319,6 +340,7 @@ public class BPlusTree {
             key = donor.getKeyAt(0);
         }
 
+        // TODO VERIFY
         if (inBetweenKeyIdx == -1) {
             // pass
         } else if (inBetweenKeyIdx >= 0) {
@@ -338,7 +360,6 @@ public class BPlusTree {
             }
         } else {
             parent.replaceKeyAt(inBetweenKeyIdx-1, key);
-            
         }
 
         int pointerIdx = receiver.searchKeyIndex(key, true);
@@ -357,7 +378,41 @@ public class BPlusTree {
     }
 
     private void moveOneKeyInternal(InternalNode donor, InternalNode receiver, boolean leftDonor, InternalNode parent, int inBetweenKeyIdx) {
-        // TODO line 498
+        int key;
+
+        if (leftDonor) {
+            donor.removeKeyAt(donor.getKeySize() - 1);
+            Node targetNode = donor.getChild(donor.getKeySize());
+            donor.removeChild(targetNode);
+
+            receiver.addChild(targetNode);
+            receiver.getKeys().add(receiver.getKeySize(), receiver.getChild(1).getKeyAt(0));
+            key = receiver.getKeyAt(0);
+        } else {
+            donor.removeKeyAt(0);
+            Node targetNode = donor.getChild(0);
+            donor.removeChild(targetNode);
+
+            receiver.addChild(targetNode);
+            receiver.getKeys().add(receiver.getKeySize(), receiver.getChild(1).getKeyAt(0));
+            key = receiver.getKeyAt(0);
+        }
+
+        int ptrIdx = receiver.searchKeyIndex(key, true);
+        int keyIdx = ptrIdx - 1;
+
+        InternalNode iNode = receiver;
+        int lowerbound = lowerbound(key);
+        int newLB = 0;
+
+        if (iNode.getKeySize() >= (keyIdx + 1)) {
+            newLB = lowerbound;
+        } else {
+            newLB = lowerbound(iNode.getKeyAt(keyIdx + 1));
+            parent.updateKey(inBetweenKeyIdx - 1, key, false, lowerbound(key));
+        }
+        parent.replaceKeyAt(inBetweenKeyIdx, newLB);
+
     }
 
     public static Node getRoot() {
