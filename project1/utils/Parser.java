@@ -1,18 +1,17 @@
 package DBSP.project1.utils;
 
-import java.io.IOException;
 import java.util.Scanner;
 
 import java.io.*;
 
-import storage.Address;
-import storage.Record;
-import storage.Disk;
+import storageComponent.Address;
+import storageComponent.Record;
+import storageComponent.Disk;
 
-import index.*;
+import indexComponent.*;
 
 public class Parser {
-    public static final int BLOCK_SIZE = 200;
+    public static final int BLOCK_SIZE = 400;
     public static final int OVERHEAD = 8;
     public static final int POINTER_SIZE = 8; //for 64-bit systems
     public static final int KEY_SIZE = 4; //Integer datatype
@@ -35,10 +34,10 @@ public class Parser {
                 if (counter % 100000 == 0)
                     System.out.println(counter + " data rows read");
                 String[] fields = line.split("\t");
-                String tconst = fields[0];
-                float averageRating = Float.parseFloat(fields[1]);
-                int numVotes = Integer.parseInt(fields[2]);
-                Record rec = createRecord(tconst, averageRating, numVotes);
+                int teamID = fields[1];
+                float FG_PCT_home = Float.parseFloat(fields[3]);
+                float FG3_PCT_home = Float.parseFloat(fields[5]);
+                Record rec = createRecord(teamID, FG_PCT_home, FG3_PCT_home);
                 Address add = db.writeRecordToStorage(rec);
                 int key = rec.getNumVotes();
                 tree.insertKey(key, add);
@@ -94,17 +93,16 @@ public class Parser {
     }
 
 
-    // TODO CHANGE THIS TO FOLLOW GAMES.TXT
     /**
      * for each line of data read in create a record object and stores it into the
      * database
      *
-     * @param tconst        alphanumeric unique identifier of the title
-     * @param averageRating weighted average of all the individual user ratings
-     * @param numVotes      number of votes the title has received
+     * @param teamID        numeric unique identifier of the team
+     * @param FG_PCT_home   weighted average of all the individual user ratings
+     * @param FG3_PCT_home  number of votes the title has received
      */
-    public static Record createRecord(String tconst, float averageRating, int numVotes) {
-        Record rec = new Record(tconst, averageRating, numVotes);
+    public static Record createRecord(int teamID, float FG_PCT_home, float FG3_PCT_home) {
+        Record rec = new Record(teamID, FG_PCT_home, FG3_PCT_home);
         return rec;
     }
 
