@@ -1,9 +1,15 @@
 package utils;
 
 import indexComponent.BPlusTree;
+
+import java.util.Date;
+import java.util.Locale;
 import java.util.Scanner;
 
 import java.io.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 
 import storageComponent.Address;
 import storageComponent.Record;
@@ -18,7 +24,7 @@ public class Parser {
     public static final int KEY_SIZE = 4; // Integer datatype
     private static int counter = 0;
 
-    public static void readTSVFile(String filePath, int diskCapacity) {
+    public static void readTXTFile(String filePath, int diskCapacity) {
         try {
             String line;
             // initialise database
@@ -35,16 +41,24 @@ public class Parser {
                 if (counter % 100000 == 0)
                     System.out.println(counter + " data rows read");
                 String[] fields = line.split("\t");
-                // need to change for game date to remove the dashes
-                int gameDateEst = Integer.parseInt(fields[0]);
-                int teamIdHome = Integer.parseInt(fields[1]);
-                byte ptsHome = Byte.parseByte(fields[2]);
-                float fgPctHome = Float.parseFloat(fields[3]);
-                float fg3PctHome = Float.parseFloat(fields[5]);
-                byte astHome = Byte.parseByte(fields[6]);
-                byte rebHome = Byte.parseByte(fields[7]);
-                byte homeTeamWins = Byte.parseByte(fields[8]);
-
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+                try {
+                    Date gameDate = formatter.parse(fields[0]);
+                    int gameDateEst = Integer.parseInt(Long.toString(gameDate.getTime() / 1000));
+                    System.out.println(gameDateEst);
+                    int teamIdHome = Integer.parseInt(fields[1]);
+                    int ptsHome_int = Integer.parseInt(fields[2]);
+                    byte ptsHome = (byte) (ptsHome_int & 0xFF);
+                    float fgPctHome = Float.parseFloat(fields[3]);
+                    float fg3PctHome = Float.parseFloat(fields[5]);
+                    byte astHome = Byte.parseByte(fields[6]);
+                    byte rebHome = Byte.parseByte(fields[7]);
+                    byte homeTeamWins = Byte.parseByte(fields[8]);
+                } catch (ParseException e) {
+                    System.out.println("Something went wrong parsing the date");
+                    e.printStackTrace();
+                }
+                
                 /*
                 Record rec = createRecord(gameDateEst, teamIdHome, ptsHome, fgPctHome, fg3PctHome, astHome, rebHome, homeTeamWins);
                 Address add = db.writeRecordToStorage(rec);

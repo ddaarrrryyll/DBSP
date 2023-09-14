@@ -15,23 +15,23 @@ public class Main {
 
         String separator = System.getProperty("file.separator");
         String filePath = new File("").getAbsolutePath();
-        filePath = filePath.concat(separator + "games.txt");
+        filePath = filePath.concat(separator + "DBSP" + separator + "project1" + separator + "games.txt");
         // filePath = filePath.concat(separator + "CZ4031 Project 1 Code" + separator + "src" + separator + "data.tsv");
         System.out.print(filePath + "\n");
         File file = new File(String.valueOf(filePath));
         if (file.exists()) {
-            System.out.print("Yes File Exist\nStarting to read data...\n");
+            System.out.print("Reading data...\n");
             int diskSize = getDiskInput();
-            Parser.readTSVFile(String.valueOf(filePath), diskSize);
+            Parser.readTXTFile(String.valueOf(filePath), diskSize);
         } else if (!file.exists()) {
             Scanner sc = new Scanner(System.in);
-            System.out.print("Default file path failed! Please input the absolute file path of data.tsv: ");
+            System.out.print("Default file path failed! Please input the absolute file path of games.txt: ");
             filePath = sc.nextLine();
             File newFileCheck = new File(String.valueOf(filePath));
             if (newFileCheck.exists()) {
-                System.out.print("Yes File Exist\nStarting to read data...\n");
+                System.out.print("Reading data...\n");
                 int diskSize = getDiskInput();
-                Parser.readTSVFile(String.valueOf(filePath), diskSize);
+                Parser.readTXTFile(String.valueOf(filePath), diskSize);
             }
         } else {
             throw new FileNotFoundException("File does not exist!");
