@@ -418,7 +418,7 @@ public class BPlusTree {
     public static Node getRoot() {
         return rootNode;
     }
-    public void setRoot(Node node) {
+    public static void setRoot(Node node) {
         rootNode = node;
         rootNode.setRoot(true);
     }

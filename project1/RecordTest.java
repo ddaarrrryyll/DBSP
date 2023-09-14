@@ -1,6 +1,6 @@
-package DBSP.project1;
 
-import DBSP.project1.storageComponent.Record;
+
+import storageComponent.Record;
 
 public class RecordTest {
     

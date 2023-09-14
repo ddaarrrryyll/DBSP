@@ -68,7 +68,7 @@ public class Node {
             }
         } catch (Exception e) {
             parent.getChildren().add(newNode);
-            parent.keys.add(newNode.getKeyAt(0))
+            parent.keys.add(newNode.getKeyAt(0));
         }
         newNode.setParent(parent);
         if (parent.keys.size() > NODE_SIZE) {
@@ -138,7 +138,7 @@ public class Node {
         insertKey(this.keys, key);
 
         newNode.keys = new ArrayList<Integer>(this.keys.subList(n, this.keys.size()));
-        this.keys.subList(n, this.keys.size()).clear()
+        this.keys.subList(n, this.keys.size()).clear();
 
         if (((LeafNode) this).getRightSibling() != null) {
             newNode.setRightSibling(((LeafNode) this).getRightSibling());
