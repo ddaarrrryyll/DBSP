@@ -1,4 +1,4 @@
-package DBSP.project1.storageComponent;
+package storageComponent;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;

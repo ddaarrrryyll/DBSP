@@ -1,11 +1,11 @@
-package DBSP.project1.indexComponent;
+package indexComponent;
 
 import java.util.ArrayList;
 import java.util.List;
-import DBSP.project1.storageComponent.Address;
-import DBSP.project1.storageComponent.Record;
-import DBSP.project1.utils.Parser;
-import DBSP.project1.storageComponent.Database;
+import storageComponent.Address;
+import storageComponent.Record;
+import utils.Parser;
+import storageComponent.Database;
 
 public class BPlusTree {
 

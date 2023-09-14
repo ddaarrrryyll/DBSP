@@ -1,4 +1,4 @@
-package DBSP.project1.storageComponent;
+package storageComponent;
 
 public class Block {
     

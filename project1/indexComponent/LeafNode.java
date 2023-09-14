@@ -1,8 +1,8 @@
-package DBSP.project1.indexComponent;
+package indexComponent;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
-import DBSP.project1.storageComponent.Address;
+import storageComponent.Address;
 
 
 public class LeafNode extends Node {

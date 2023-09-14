@@ -1,4 +1,4 @@
-package DBSP.project1.indexComponent;
+package indexComponent;
 
 public class BPTHelper {
     private static int totalNode;

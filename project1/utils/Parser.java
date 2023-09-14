@@ -1,15 +1,15 @@
-package DBSP.project1.utils;
+package utils;
 
-import DBSP.project1.indexComponent.BPlusTree;
+import indexComponent.BPlusTree;
 import java.util.Scanner;
 
 import java.io.*;
 
-import DBSP.project1.storageComponent.Address;
-import DBSP.project1.storageComponent.Record;
-import DBSP.project1.storageComponent.Database;
+import storageComponent.Address;
+import storageComponent.Record;
+import storageComponent.Database;
 
-import DBSP.project1.indexComponent.*;
+import indexComponent.*;
 
 public class Parser {
     public static final int BLOCK_SIZE = 400;

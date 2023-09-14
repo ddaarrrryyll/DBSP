@@ -1,4 +1,4 @@
-package DBSP.project1.indexComponent;
+package indexComponent;
 
 import java.util.ArrayList;
 

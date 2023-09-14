@@ -1,7 +1,7 @@
-package DBSP.project1.indexComponent;
+package indexComponent;
 
 import java.util.*;
-import DBSP.project1.storageComponent.Address;
+import storageComponent.Address;
 import java.lang.Math;
 
 public class Node {
