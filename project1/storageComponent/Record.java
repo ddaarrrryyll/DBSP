@@ -39,6 +39,10 @@ public class Record {
         this.homeTeamWins = 0;
     }
 
+    public static int getRecordSize() {
+        return 20;
+    }
+
     // Getters
     public int getGameDateEst() {
         return gameDateEst;
