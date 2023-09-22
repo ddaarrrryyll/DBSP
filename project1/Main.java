@@ -54,7 +54,6 @@ public class Main {
                 if (diskSize < 200 || diskSize > 500) {
                     n++;
                 } else {
-                    sc.close();
                     return diskSize * (int) (Math.pow(10, 6));
                 }
             } catch (IndexOutOfBoundsException e) {
@@ -68,7 +67,6 @@ public class Main {
                 break;
             }
         }
-        sc.close();
         return DEFAULT_MAX_DISK_CAPACITY;
     }
 }

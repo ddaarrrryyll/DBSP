@@ -45,7 +45,6 @@ public class Parser {
                 try {
                     Date gameDate = formatter.parse(fields[0]);
                     int gameDateEst = Integer.parseInt(Long.toString(gameDate.getTime() / 1000));
-                    System.out.println(gameDateEst);
                     int teamIdHome = Integer.parseInt(fields[1]);
                     int ptsHome_int = Integer.parseInt(fields[2]);
                     byte ptsHome = (byte) (ptsHome_int & 0xFF);
@@ -54,46 +53,41 @@ public class Parser {
                     byte astHome = Byte.parseByte(fields[6]);
                     byte rebHome = Byte.parseByte(fields[7]);
                     byte homeTeamWins = Byte.parseByte(fields[8]);
-                } catch (ParseException e) {
-                    System.out.println("Something went wrong parsing the date");
-                    e.printStackTrace();
+                    Record record = createRecord(gameDateEst, teamIdHome, ptsHome, fgPctHome, fg3PctHome, astHome, rebHome, homeTeamWins);
+                    Address addr = db.writeRecordToStorage(record);
+                    // int key = rec.getNumVotes();
+                    // tree.insertKey(key, addr);
+                } catch (Exception e) { // handles empty cells + parse exception
+                    // System.out.println("Skipping empty tuples");
                 }
                 
-                /*
-                Record rec = createRecord(gameDateEst, teamIdHome, ptsHome, fgPctHome, fg3PctHome, astHome, rebHome, homeTeamWins);
-                Address add = db.writeRecordToStorage(rec);
-                int key = rec.getNumVotes();
-                tree.insertKey(key, add);
-                
-                Temperoraily commented out to test the B+ tree
-                */ 
-
             }
             reader.close();
 
-            // TODO: to run the experiments independently of one another
             // Choose Experiment number
             try {
-
-                int index = 0;
+                int experimentNum = 0;
+                Scanner sc = new Scanner(System.in);
                 while (true) {
                     try {
                         System.out.println("\nChoose Experiment (1-5):");
-                        Scanner sc = new Scanner(System.in);
-                        index = sc.nextInt();
-
-                        if (index > 0 && index < 6) {
+                        experimentNum = sc.nextInt();
+                        System.out.println(experimentNum);
+                        if (experimentNum > 0 && experimentNum < 6) {
                             break;
                         } else {
                             System.out.println("\nPlease only input 1-5!");
                         }
                     } catch (Exception e) {
+                        e.printStackTrace();
+                        sc.next();
                         System.out.println("\nPlease only input 1-5!");
+                        break;
                     }
                 }
                 
                 /*
-                switch (index) {
+                switch (experimentNum) {
                     case 1:
                         db.experimentOne();
                         break;
@@ -133,8 +127,7 @@ public class Parser {
     public static Record createRecord(int gameDateEst, int teamIdHome, byte ptsHome, 
                                         float fgPctHome, float fg3PctHome, 
                                         byte astHome, byte rebHome, byte homeTeamWins) {
-        Record rec = new Record(gameDateEst, teamIdHome, ptsHome, fgPctHome, fg3PctHome, astHome, rebHome, homeTeamWins);
-        return rec;
+        return new Record(gameDateEst, teamIdHome, ptsHome, fgPctHome, fg3PctHome, astHome, rebHome, homeTeamWins);
     }
 
 }
