@@ -65,63 +65,34 @@ public class Database {
         return new Address(blockPtr, offset);
     }
 
-    
-    /** 
-     * @return int
-     */
     public int getFilledBlocksCount() {
         return filledBlocks.size();
     }
 
     
-    /** 
-     * @return int
-     */
     public int getBlockAccesses() {
         return blockAccesses;
     }
 
 
-    /**
-     * Retrieves a block from Disk, either from the LRU cache or directly from Disk, given its block number.
-     * If the block is on cache, return that block.
-     * Else, load the block onto the cache from the Disk.
-     *
-     * @param blockNumber The block number to be retrieved.
-     * @return The requested Block object.
-     */
     private Block getBlock(int blockNumber) {
         Block block = blocks[blockNumber];
         blockAccesses++;
         return block;
     }
 
-    /**
-     * Retrieves the number of block accesses reducted due to cache hits
-     *
-     * @return number of block accessed reduced
-     */
+    
+    // TODO IDK MAYBE REMOVE
     public int getBlockAccessReduced() {
         return blockAccessReduced;
     }
 
-
-    /**
-     * Retrieves the record stored at the specified address.
-     *
-     * @param add The address of the record to retrieve.
-     * @return The record stored at the specified address.
-     */
     public Record getRecord(Address add) {
         Block block = getBlock(add.getBlockId());
         return block.getRecord(add.getOffset());
     }
 
-    /**
-     * Deletes the record at the specified address  on Disk.
-     *
-     * @param ArrayList of records to be deleted
-     */
+
     public void deleteRecord(ArrayList<Address> addList) {
         for (Address add : addList) {
             int blockId = add.getBlockId();
@@ -137,10 +108,10 @@ public class Database {
 
 
     public void experimentOne() {
-        System.out.println("\n----------------------EXPERIMENT 1-----------------------");
-        System.out.printf("Number of Records: %d\n", this.getNumberOfRecords());
-        System.out.println(String.format("Record Size: %d Bytes", Record.getRecordSize()));
-        System.out.printf("Number of Records in each Block: %d\n", Block.getTotalRecords());
-        System.out.println(String.format("Number of Blocks for storage: %d\n", this.getFilledBlocksCount()));
+        System.out.println("\nEXPERIMENT 1: store the data from games.txt on the disk and report statistics:");
+        System.out.printf("Number of records: %d\n", this.getNumberOfRecords());
+        System.out.println(String.format("Size of record: %d Bytes", Record.getRecordSize()));
+        System.out.printf("Number of records stored in a block: %d\n", Block.getTotalRecords());
+        System.out.println(String.format("Number of blocks for storing data: %d\n", this.getFilledBlocksCount()));
     }
 }
