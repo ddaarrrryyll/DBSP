@@ -47,21 +47,15 @@ public class Database {
     }
 
     private int getFirstAvailableBlockId() {
-        if (availableBlocks.isEmpty()) {
-            return -1;
-        }
+        if (availableBlocks.isEmpty()) return -1;
         return availableBlocks.iterator().next();
     }
 
     private Address insertRecordIntoBlock(int blockPtr, Record rec) {
-        if (blockPtr == -1) {
-            return null;
-        }
-        int offset = blocks[blockPtr].insertRecordIntoBlock(rec);
+        if (blockPtr == -1) return null;
+        int offset = blocks[blockPtr].insertRecord(rec);
         filledBlocks.add(blockPtr);
-        if (!blocks[blockPtr].isBlockAvailable()) {
-            availableBlocks.remove(blockPtr);
-        }
+        if (!blocks[blockPtr].blockAvailable()) availableBlocks.remove(blockPtr);
         return new Address(blockPtr, offset);
     }
 
@@ -107,11 +101,11 @@ public class Database {
     }
 
 
-    public void experimentOne() {
+    public void ex1() {
         System.out.println("\nEXPERIMENT 1: store the data from games.txt on the disk and report statistics:");
         System.out.printf("Number of records: %d\n", this.getNumberOfRecords());
         System.out.println(String.format("Size of record: %d Bytes", Record.getRecordSize()));
-        System.out.printf("Number of records stored in a block: %d\n", Block.getTotalRecords());
+        System.out.printf("Number of records stored in a block: %d\n", Block.getmaxRecordCount());
         System.out.println(String.format("Number of blocks for storing data: %d\n", this.getFilledBlocksCount()));
     }
 }

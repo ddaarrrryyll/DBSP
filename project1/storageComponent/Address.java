@@ -19,7 +19,7 @@ public class Address {
 
     @Override
     public String toString() {
-        return String.format("blk %d offset %d", blockID, offset);
+        return String.format("BLOCK %d OFFSET %d", blockID, offset);
     }
 
 }

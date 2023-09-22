@@ -1,7 +1,8 @@
 package storageComponent;
 
-import java.time.DateTimeException;
-import java.time.LocalDate;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 // Total size of record: 20 bytes
 public class Record {
@@ -13,6 +14,7 @@ public class Record {
     private byte astHome; // 1 byte 
     private byte rebHome; // 1 byte
     private byte homeTeamWins; // 1 byte
+    private static int RECORD_SIZE = 20;
 
     public Record(int gameDateEst, int teamIdHome, byte ptsHome, 
                   float fgPctHome, float fg3PctHome, 
@@ -26,21 +28,22 @@ public class Record {
         this.rebHome = rebHome;
         this.homeTeamWins = homeTeamWins;
     }
+    
 
     // This is assuming all records must be NOT NULL
     public Record() {
         this.gameDateEst = 0;
         this.teamIdHome = 0;
         this.ptsHome = 0;
-        this.fgPctHome = 0.0f;
-        this.fg3PctHome = 0.0f;
+        this.fgPctHome = 0;
+        this.fg3PctHome = 0;
         this.astHome = 0;
         this.rebHome = 0;
         this.homeTeamWins = 0;
     }
 
     public static int getRecordSize() {
-        return 20;
+        return RECORD_SIZE;
     }
 
     // Getters
@@ -89,11 +92,11 @@ public class Record {
         this.ptsHome = ptsHome;
     }
 
-    public void setFgPctHome(float fgPctHome) {
+    public void setFgPctHome(int fgPctHome) {
         this.fgPctHome = fgPctHome;
     }
 
-    public void setFg3PctHome(float fg3PctHome) {
+    public void setFg3PctHome(int fg3PctHome) {
         this.fg3PctHome = fg3PctHome;
     }
 
@@ -122,39 +125,11 @@ public class Record {
                "\n\tHOME_TEAM_WINS: " + homeTeamWins +
                "\n}";
     }
-
-    public static int dateToInt(String date) {
-        if (date == null || date.length() != 10 || date.charAt(2) != '/' || date.charAt(5) != '/') {
-            throw new IllegalArgumentException("Invalid date format. Expected DD/MM/YYYY format.");
-        }
-
-        int day = Integer.parseInt(date.substring(0, 2));
-        int month = Integer.parseInt(date.substring(3, 5));
-        int year = Integer.parseInt(date.substring(6, 10));
-
-        // Validating the date using LocalDate
-        try {
-            LocalDate.of(year, month, day);
-        } catch (DateTimeException e) {
-            throw new IllegalArgumentException("Invalid date value provided: " + date);
-        }
-
-        return day * 1000000 + month * 10000 + year;
-    }
     
-    public static String intToDate(int dateInt) {
-        int day = dateInt / 1000000;                    // Extracting day
-        int month = (dateInt / 10000) % 100;            // Extracting month
-        int year = dateInt % 10000;                     // Extracting year
-    
-        // Validating the date using LocalDate
-        try {
-            LocalDate.of(year, month, day);
-        } catch (DateTimeException e) {
-            throw new IllegalArgumentException("Invalid date integer provided: " + dateInt);
-        }
-    
-        return String.format("%02d/%02d/%d", day, month, year);
+    public static String intToDate(int epochTime) {
+        Date date = new Date((long) epochTime * 1000);
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        return formatter.format(date);
     }
     
 }

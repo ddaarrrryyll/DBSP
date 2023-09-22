@@ -1,26 +1,46 @@
 package indexComponent;
 
 public class BPTHelper {
-    private static int totalNode;
-    private static int treeDegree;
 
-    public int getTotalNodes() {
-        return totalNode;
-    }
+    private static int nodeCount;
+    private static int treeDegree;
+    private static int totalNodeReads;
+    private static int totalRangeNodeReads;
 
     static void addNode() {
-        totalNode++;
+        nodeCount++;
     }
 
-    public int getTreeDegree() {
-        return treeDegree;
+    public int getNodeCount() {
+        return nodeCount;
     }
 
-    public static void addTreeDegree() {
-        treeDegree++;
-    }
+    // TODO DELETE NEED TO SEE IF USEFUL
 
-    public static void deleteTreeDegree() {
+
+    public static void deleteOneTreeDegree() {
         treeDegree--;
     }
+
+ 
+    public int getNodeReads() {
+        return totalNodeReads;
+    }
+
+
+    static void addNodeReads() {
+        totalNodeReads++;
+    }
+
+ 
+    public int getIndexNodeReads() {
+        return totalRangeNodeReads;
+    }
+
+
+    static void addIndexNodeReads() {
+        totalRangeNodeReads++;
+        addNodeReads();
+    }
+
 }

@@ -3,19 +3,15 @@ package utils;
 import indexComponent.BPlusTree;
 
 import java.util.Date;
-import java.util.Locale;
 import java.util.Scanner;
 
 import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 
 import storageComponent.Address;
 import storageComponent.Record;
 import storageComponent.Database;
-
-import indexComponent.*;
 
 public class Parser {
     public static final int BLOCK_SIZE = 400;
@@ -29,32 +25,25 @@ public class Parser {
             String line;
             Database db = new Database(diskCapacity, BLOCK_SIZE);
             BufferedReader reader = new BufferedReader(new FileReader(filePath));
-            reader.readLine(); // skip the first line (the column line)
+            // throw header away
+            reader.readLine();
             int invalidDataCount = 0;
 
-            BPlusTree tree = new BPlusTree();
+            BPlusTree bPlusTree = new BPlusTree();
 
             while ((line = reader.readLine()) != null) {
                 counter++;
-                if (counter % 100000 == 0)
+                if (counter % 10000 == 0)
                     System.out.println(counter + " data rows read");
-                String[] fields = line.split("\t");
-                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+                String[] tuple = line.split("\t");
                 try {
-                    Date gameDate = formatter.parse(fields[0]);
-                    int gameDateEst = Integer.parseInt(Long.toString(gameDate.getTime() / 1000));
-                    int teamIdHome = Integer.parseInt(fields[1]);
-                    int ptsHome_int = Integer.parseInt(fields[2]);
-                    byte ptsHome = (byte) (ptsHome_int & 0xFF);
-                    float fgPctHome = Float.parseFloat(fields[3]);
-                    float fg3PctHome = Float.parseFloat(fields[5]);
-                    byte astHome = Byte.parseByte(fields[6]);
-                    byte rebHome = Byte.parseByte(fields[7]);
-                    byte homeTeamWins = Byte.parseByte(fields[8]);
-                    Record record = createRecord(gameDateEst, teamIdHome, ptsHome, fgPctHome, fg3PctHome, astHome, rebHome, homeTeamWins);
-                    Address addr = db.writeRecordToStorage(record);
-                    // int key = rec.getNumVotes();
-                    // tree.insertKey(key, addr);
+                    Record row = parseTuple(tuple);                
+                    // if (counter == 1) {
+                    //     System.out.println(record.toString());
+                    // }
+                    Address addr = db.writeRecordToStorage(row);
+                    float key = row.getFgPctHome();
+                    bPlusTree.insertKey(key, addr);
                 } catch (Exception e) { // handles empty cells + parse exception
                     invalidDataCount++;
                 }
@@ -76,7 +65,6 @@ public class Parser {
                             System.out.println("\nPlease only input 1-5!");
                         }
                     } catch (Exception e) {
-                        // e.printStackTrace();
                         System.out.println("\nPlease only input 1-5!");
                         break;
                     }
@@ -84,11 +72,11 @@ public class Parser {
                 
                 switch (experimentNum) {
                     case 1:
-                        db.experimentOne();
+                        db.ex1();
                         break;
-                    // case 2:
-                    //     BPlusTree.experimentTwo(tree);
-                    //     break;
+                    case 2:
+                        BPlusTree.ex2(bPlusTree);
+                        break;
                     // DIFFERENT
                     // case 3:
                     //     BplusTree.experimentThree(db, tree);
@@ -113,14 +101,26 @@ public class Parser {
     }
 
 
-    /**
-     * for each line of data read in create a record object and stores it into the
-     * database
-     *
-     * @param teamID        numeric unique identifier of the team
-     * @param FG_PCT_home   
-     * @param FG3_PCT_home  
-     */
+    public static Record parseTuple(String[] tuple) throws ParseException {
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        Date gameDate = formatter.parse(tuple[0]);
+        int gameDateEst = Integer.parseInt(Long.toString(gameDate.getTime() / 1000));
+        // sanity check TO REMOVE
+        // if (counter == 1) {
+        //     Date date = new Date((long) gameDateEst * 1000);
+        //     System.out.println(formatter.format(date));
+        // }
+        int teamIdHome = Integer.parseInt(tuple[1]);
+        int ptsHome_int = Integer.parseInt(tuple[2]);
+        byte ptsHome = (byte) (ptsHome_int & 0xFF);
+        float fgPctHome = Float.parseFloat(tuple[3]);
+        float fg3PctHome = Float.parseFloat(tuple[5]);
+        byte astHome = Byte.parseByte(tuple[6]);
+        byte rebHome = Byte.parseByte(tuple[7]);
+        byte homeTeamWins = Byte.parseByte(tuple[8]);
+        return createRecord(gameDateEst, teamIdHome, ptsHome, fgPctHome, fg3PctHome, astHome, rebHome, homeTeamWins);    
+    }
+
     public static Record createRecord(int gameDateEst, int teamIdHome, byte ptsHome, 
                                         float fgPctHome, float fg3PctHome, 
                                         byte astHome, byte rebHome, byte homeTeamWins) {
