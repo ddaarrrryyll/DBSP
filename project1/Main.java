@@ -4,10 +4,6 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 
-
-/**
- * Main entry into the program
- */
 public class Main {
     private static final int DEFAULT_MAX_DISK_CAPACITY = 500 * (int) (Math.pow(10, 6));
 
@@ -16,11 +12,10 @@ public class Main {
         String separator = System.getProperty("file.separator");
         String filePath = new File("").getAbsolutePath();
         filePath = filePath.concat(separator + "DBSP" + separator + "project1" + separator + "games.txt");
-        // filePath = filePath.concat(separator + "CZ4031 Project 1 Code" + separator + "src" + separator + "data.tsv");
-        System.out.print(filePath + "\n");
+
         File file = new File(String.valueOf(filePath));
         if (file.exists()) {
-            System.out.print("Reading data...\n");
+            System.out.println("Reading data from " + String.valueOf(filePath));
             int diskSize = getDiskInput();
             Parser.readTXTFile(String.valueOf(filePath), diskSize);
         } else if (!file.exists()) {
@@ -29,7 +24,7 @@ public class Main {
             filePath = sc.nextLine();
             File newFileCheck = new File(String.valueOf(filePath));
             if (newFileCheck.exists()) {
-                System.out.print("Reading data...\n");
+                System.out.println("Reading data from " + String.valueOf(filePath));
                 int diskSize = getDiskInput();
                 Parser.readTXTFile(String.valueOf(filePath), diskSize);
             }
@@ -38,12 +33,7 @@ public class Main {
         }
     }
 
-    /**
-     * The getDiskInput method prompts the user to input a disk size between 200 and 500 MB, and returns the disk size in bytes.
-     * If the user does not enter a valid disk size within three attempts, the method returns the default disk size.
-     *
-     * @return the disk size
-     */
+    // TODO CHANGE TO USE 200MB BY DEFAULT
     private static int getDiskInput() {
         int n = 0;
         Scanner sc = new Scanner(System.in);

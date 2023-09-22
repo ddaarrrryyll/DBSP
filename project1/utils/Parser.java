@@ -19,7 +19,7 @@ import indexComponent.*;
 
 public class Parser {
     public static final int BLOCK_SIZE = 400;
-    public static final int OVERHEAD = 8;
+    public static final int OVERHEAD = 8; // TODO may not need
     public static final int POINTER_SIZE = 8; // for 64-bit systems
     public static final int KEY_SIZE = 4; // Integer datatype
     private static int counter = 0;
@@ -27,13 +27,11 @@ public class Parser {
     public static void readTXTFile(String filePath, int diskCapacity) {
         try {
             String line;
-            // initialise database
             Database db = new Database(diskCapacity, BLOCK_SIZE);
-            // start loading data
             BufferedReader reader = new BufferedReader(new FileReader(filePath));
             reader.readLine(); // skip the first line (the column line)
+            int invalidDataCount = 0;
 
-            // initialise a new B+ tree
             BPlusTree tree = new BPlusTree();
 
             while ((line = reader.readLine()) != null) {
@@ -58,13 +56,13 @@ public class Parser {
                     // int key = rec.getNumVotes();
                     // tree.insertKey(key, addr);
                 } catch (Exception e) { // handles empty cells + parse exception
-                    // System.out.println("Skipping empty tuples");
+                    invalidDataCount++;
                 }
                 
             }
             reader.close();
-
-            // Choose Experiment number
+            System.out.println(invalidDataCount + " tuples skipped due to invalid data");
+            
             try {
                 int experimentNum = 0;
                 Scanner sc = new Scanner(System.in);
@@ -72,39 +70,38 @@ public class Parser {
                     try {
                         System.out.println("\nChoose Experiment (1-5):");
                         experimentNum = sc.nextInt();
-                        System.out.println(experimentNum);
                         if (experimentNum > 0 && experimentNum < 6) {
                             break;
                         } else {
                             System.out.println("\nPlease only input 1-5!");
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
-                        sc.next();
+                        // e.printStackTrace();
                         System.out.println("\nPlease only input 1-5!");
                         break;
                     }
                 }
                 
-                /*
                 switch (experimentNum) {
                     case 1:
                         db.experimentOne();
                         break;
-                    case 2:
-                        BplusTree.experimentTwo(tree);
-                        break;
-                    case 3:
-                        BplusTree.experimentThree(db, tree);
-                        break;
-                    case 4:
-                        BplusTree.experimentFour(db, tree);
-                        break;
-                    case 5:
-                        BplusTree.experimentFive(db, tree);
-                        break;
+                    // case 2:
+                    //     BPlusTree.experimentTwo(tree);
+                    //     break;
+                    // DIFFERENT
+                    // case 3:
+                    //     BplusTree.experimentThree(db, tree);
+                    //     break;
+                    // DIFFERENT
+                    // case 4:
+                    //     BplusTree.experimentFour(db, tree);
+                    //     break;
+                    // DIFFERENT
+                    // case 5:
+                    //     BplusTree.experimentFive(db, tree);
+                    //     break;
                 }
-                */
 
             } catch (Exception e) {
 
