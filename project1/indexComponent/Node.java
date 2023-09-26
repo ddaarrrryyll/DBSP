@@ -307,13 +307,7 @@ public class Node {
 
     }
  
-    /** 
-     * Called when leaf node is full. Split current leaf node into 2 and returns the new node.
-     *
-     * @param key the newly inserted key.
-     * @param addr the address of the key.
-     * @return a new node that is created from the splited leaf node.
-     */
+    // split itself (this node) into two, and return the sibling
     public LeafNode splitLeafNodeHelper(Float key, Address addr) {
         LeafNode newNode = new LeafNode();
         BPTHelper.addNode();
@@ -321,12 +315,11 @@ public class Node {
         ((LeafNode) this).addresses.add(addr);
         ((LeafNode) this).keyAddrMap.put(key, ((LeafNode) this).addresses);
 
-        // Removing whats after the nth index into the new node
+        // moves the remaining keys into a sibling node so that current node has the  min required number of keys
         int n = NODE_SIZE - minLeafNodeSize + 1;
         int i = 0;
         Float fromKey = 0.0f;
 
-        // finding the nth index
         for (Map.Entry<Float, ArrayList<Address>> entry : ((LeafNode) this).keyAddrMap.entrySet()) {
             if (i == n) {
                 fromKey = entry.getKey();
@@ -335,21 +328,19 @@ public class Node {
             i++;
         }
 
+        // save the last n keys as a temporary variable to be added to newNode
         SortedMap<Float, ArrayList<Address>> lastnKeys = ((LeafNode) this).keyAddrMap.subMap(fromKey, true,
                 ((LeafNode) this).keyAddrMap.lastKey(), true);
-
         newNode.keyAddrMap = new TreeMap<Float, ArrayList<Address>>(lastnKeys);
-
         lastnKeys.clear();
 
         insertKeyInOrder(this.keys, key);
 
-        // adding keys after the nth index into the newNode's arraylist of keys
-        newNode.keys = new ArrayList<Float>(this.keys.subList(n, this.keys.size()));// after nth index
-
-        // removing keys after the nth index for old node's arraylist of keys
+        // move keys after the nth index from this node into sibling
+        newNode.keys = new ArrayList<Float>(this.keys.subList(n, this.keys.size()));
         this.keys.subList(n, this.keys.size()).clear();
 
+        // shift the leaf nodes to the right and set new node as this node's right sibling and vice versa
         if (((LeafNode) this).getRightSibling() != null) {
             newNode.setRightSibling(((LeafNode) this).getRightSibling());
             ((LeafNode) this).getRightSibling().setLeftSibling(newNode);
@@ -359,12 +350,7 @@ public class Node {
         return newNode;
     }
 
-    
-    /** 
-     * Called when non-leaf node is full. Split current non-leaf node into 2 and returns the new parent node.
-     *
-     * @return the new Parent node that is now connected to the 2 new non-leaf node.
-     */
+    // similar to prev helper
     public InternalNode splitInternalNodeHelper() {
 
         InternalNode currentParent = (InternalNode) (this);
@@ -375,20 +361,19 @@ public class Node {
         Float keyToSplitAt = currentParent.getKeyAt(minInternalNodeSize);
         for (int k = currentParent.getKeyCount(); k > 0; k--) {
             if (currentParent.getKeyAt(k - 1) < keyToSplitAt) {
-                break; // We've reached the end of the keys to move
+                break;
             }
             Float currentKey = currentParent.getKeyAt(k - 1);
             Node currentChild = currentParent.getChild(k);
 
-            // Add node and keys to new parent
+            // add node and keys to new parent
             newParent.children.add(0, currentChild);
             newParent.keys.add(0, currentKey);
             currentChild.setParent(newParent);
 
-            // Remove node and keys from old parent
+            // remove node and keys from old parent
             currentParent.removeChild(currentParent.getChild(k));
             currentParent.keys.remove(k - 1);
-
         }
 
         return newParent;

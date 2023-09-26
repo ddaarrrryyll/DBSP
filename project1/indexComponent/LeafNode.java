@@ -65,7 +65,7 @@ public class LeafNode extends Node {
         keys.add(i, key);
     }
 
-    public void insertByRedistribution(Float key, ArrayList<Address> addr) {
+    public void insertKeyAddrArrPair(Float key, ArrayList<Address> addr) {
         keyAddrMap.put(key, addr);
     }
 
