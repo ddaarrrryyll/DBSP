@@ -16,8 +16,8 @@ import storageComponent.Database;
 public class Parser {
     public static final int BLOCK_SIZE = 400;
     public static final int OVERHEAD = 8; // TODO may not need
-    public static final int POINTER_SIZE = 8; // for 64-bit systems
-    public static final int KEY_SIZE = 4; // Integer datatype
+    public static final int POINTER_SIZE = 8; // pointer size for 64 bit systems = 8 bytes
+    public static final int KEY_SIZE = 4; // type(key) = float 4 bytes
     private static int counter = 0;
 
     public static void readTXTFile(String filePath, int diskCapacity) {
