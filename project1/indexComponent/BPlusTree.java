@@ -66,7 +66,6 @@ public class BPlusTree {
                 if (nodeToInsertTo.isLeaf()) {
                     break;
                 }
-
             }
 
             keys = nodeToInsertTo.getKeys();
@@ -79,7 +78,6 @@ public class BPlusTree {
             // if key to insert is smaller than smallest key in node
             return (LeafNode) ((InternalNode) nodeToInsertTo).getChild(0);
         }
-
     }
 
     // GETTERS AND SETTERS
