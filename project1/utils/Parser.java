@@ -43,7 +43,7 @@ public class Parser {
                     // }
                     Address addr = db.writeRecordToStorage(row);
                     float key = row.getFgPctHome();
-                    bPlusTree.insertKey(key, addr);
+                    bPlusTree.insertKeyAddrPair(key, addr);
                 } catch (Exception e) { // handles empty cells + parse exception
                     invalidDataCount++;
                 }

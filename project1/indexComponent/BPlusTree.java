@@ -18,11 +18,6 @@ public class BPlusTree {
         rootNode = createFirstNode();
     }
 
-    /**
-     * Creates the first node in the B+ tree.
-     * 
-     * @param newNode is the the first leaf node created
-     */
     public LeafNode createFirstNode() {
         LeafNode newNode = new LeafNode();
         BPTHelper.addNode();
@@ -32,103 +27,42 @@ public class BPlusTree {
         return newNode;
     }
 
-    /**
-     * Creates new node.
-     * Calls addNode for counting of total amount of nodes.
-     * 
-     * @return newly created node
-     */
     public static Node createNode() {
         Node newNode = new Node();
         BPTHelper.addNode();
         return newNode;
     }
 
-    /**
-     * Update whether current node is a leaf node from boolean argument root.
-     * 
-     * @param root set boolean value of node to root.
-     */
-    public static void setRoot(Node root) {
-        rootNode = root;
-        rootNode.setRoot(true);
-    }
-
-    /**
-     * Returns the root node of the B+ tree
-     * 
-     * @return the root node of the B+ tree
-     */
-    public static Node getRoot() {
-        return rootNode;
-    }
-
-    /**
-     * Inserts the given key and address object into the leaf node returned from
-     * searchNode
-     * 
-     * @param key the key to be added into the leaf node
-     * @param add the address object to be added into the leaf node
-     */
-
-    public void insertKey(Float key, Address add) {
-        // have to first search for the LeafNode to insert to, then add a record add
-        // that LeafNode
-        nodeToInsertTo = searchNode(key);
-
+    // insert key: addr to a suitable node
+    public void insertKeyAddrPair(Float key, Address add) {
+        nodeToInsertTo = searchNodeContaining(key);
         ((LeafNode) nodeToInsertTo).addRecord(key, add);
     }
-
-    /**
-     * Loops through tree to find for node containing the integer key.
-     * 
-     * @param key The key to search for.
-     * @return the node containig the integer key.
-     */
+    
     // finding the leaf node to find/insert the key to
-    public LeafNode searchNode(Float key) {
+    public LeafNode searchNodeContaining(Float key) {
         ArrayList<Float> keys;
 
-        // If root is a leaf node, means its still at the first node, hence return the
-        // rootNode
+        // basse case is rootNode as Leaf
         if (BPlusTree.rootNode.isLeaf()) {
             setRoot(rootNode);
             return (LeafNode) rootNode;
-        }
-
-        // else, it is not a leaf node
-        else {
+        } else {
             Node nodeToInsertTo = (InternalNode) getRoot();
 
-            // Starting from the rootnode, keep looping (going down) until the current
-            // node's (nodeToInsertTo) child is a leaf node
-
+            // keep traversing until own child is a leaf node
             while (!((InternalNode) nodeToInsertTo).getChild(0).isLeaf()) {
-
                 keys = nodeToInsertTo.getKeys();
-
-                // loops through keys of current node (nodeToInsertTo)
-
                 for (int i = keys.size() - 1; i >= 0; i--) {
 
-                    // if there exists a key in the node where it's value is smaller or equals to
-                    // the key,
-                    // set the current node to the child node corresponding to that node
-
+                    // node is suitable if there is a key <= key to insert
                     if (nodeToInsertTo.getKey(i) <= key) {
                         nodeToInsertTo = ((InternalNode) nodeToInsertTo).getChild(i + 1);
                         break;
-                    }
-
-                    // if the index reaches 0, means that the key is smaller than the smallest key
-                    // in the node (at index 0)
-                    // set the current node to the child node that corresponds to that node
-
-                    else if (i == 0) {
+                    } else if (i == 0) { // key to insert is smaller than smallest key in curr node
                         nodeToInsertTo = ((InternalNode) nodeToInsertTo).getChild(0);
                     }
                 }
-
                 if (nodeToInsertTo.isLeaf()) {
                     break;
                 }
@@ -136,22 +70,26 @@ public class BPlusTree {
             }
 
             keys = nodeToInsertTo.getKeys();
-
-            // Looping through the current node's indexes to find which of its leaf/child
-            // node to insert the key into,
-            // similar to above but this is to obtain the leaf node
-            // return the child node once found
+            // find the child node to insert to
             for (int i = keys.size() - 1; i >= 0; i--) {
                 if (keys.get(i) <= key) {
                     return (LeafNode) ((InternalNode) nodeToInsertTo).getChild(i + 1);
                 }
             }
-
-            // if the key is smaller than the smallest key in the current node, return the
-            // child corresponding to the smallest key
+            // if key to insert is smaller than smallest key in node
             return (LeafNode) ((InternalNode) nodeToInsertTo).getChild(0);
         }
 
+    }
+
+    // GETTERS AND SETTERS
+    public static void setRoot(Node root) {
+        rootNode = root;
+        rootNode.setRoot(true);
+    }
+
+    public static Node getRoot() {
+        return rootNode;
     }
 
     /**
@@ -843,7 +781,7 @@ public class BPlusTree {
     }
 
     /**
-     * Wrapper function on top of searchNode
+     * Wrapper function on top of searchNodeContaining
      *
      * @param key
      * @return ArrayList of Address in the database
