@@ -100,6 +100,32 @@ public class Database {
         }
     }
 
+    // bruteforce search, return number of block accesses
+    public int bruteForceSearch(float fg_pct_home, float fg_pct_home_upper_bound) {
+        Record rec;
+        float recFgPct;
+        int blkAccesses = 0;
+        ArrayList<Record> res = new ArrayList<>();
+        for (Integer blkPtr : this.filledBlocks) {
+            blkAccesses++;
+            Block block = this.blocks[blkPtr];
+            int blockSize = block.getCurrSize();
+            
+            for (int offset = 0; offset < blockSize; offset++) {
+                rec = block.getRecord(offset);
+                recFgPct = rec.getFgPctHome();
+                if (recFgPct >= fg_pct_home && recFgPct <= fg_pct_home_upper_bound) {
+                    res.add(rec);
+                }
+            }
+        }
+        if (res.isEmpty()) {
+            System.out.printf("\nNo records within range [%0.2f, %0.2f] found in db", fg_pct_home, fg_pct_home_upper_bound);
+        } else{
+            System.out.printf("\n(Bruteforce) No. of records found: %d", res.size());
+        }
+        return blkAccesses;
+    }
 
     public void ex1() {
         System.out.println("\nEXPERIMENT 1: store the data from games.txt on the disk and report statistics:");

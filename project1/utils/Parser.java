@@ -77,18 +77,15 @@ public class Parser {
                     case 2:
                         BPlusTree.ex2(bPlusTree);
                         break;
-                    // DIFFERENT
-                    // case 3:
-                    //     BplusTree.experimentThree(db, tree);
-                    //     break;
-                    // DIFFERENT
-                    // case 4:
-                    //     BplusTree.experimentFour(db, tree);
-                    //     break;
-                    // DIFFERENT
-                    // case 5:
-                    //     BplusTree.experimentFive(db, tree);
-                    //     break;
+                    case 3:
+                        BPlusTree.ex3(db, bPlusTree);
+                        break;
+                    case 4:
+                        BPlusTree.ex4(db, bPlusTree);
+                        break;
+                    case 5:
+                        BPlusTree.ex5(db, bPlusTree);
+                        break;
                 }
 
             } catch (Exception e) {

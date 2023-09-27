@@ -4,8 +4,8 @@ public class BPTHelper {
 
     private static int nodeCount;
     private static int treeDegree;
-    private static int totalNodeReads;
-    private static int totalRangeNodeReads;
+    private static int nodeReads;
+    private static int nodeReadsEx4;
 
     static void addNode() {
         nodeCount++;
@@ -15,8 +15,6 @@ public class BPTHelper {
         return nodeCount;
     }
 
-    // TODO DELETE NEED TO SEE IF USEFUL
-
 
     public static void deleteOneTreeDegree() {
         treeDegree--;
@@ -24,22 +22,22 @@ public class BPTHelper {
 
  
     public int getNodeReads() {
-        return totalNodeReads;
+        return nodeReads;
     }
 
 
     static void addNodeReads() {
-        totalNodeReads++;
+        nodeReads++;
     }
 
  
-    public int getIndexNodeReads() {
-        return totalRangeNodeReads;
+    public int getNodeReadsEx4() {
+        return nodeReadsEx4;
     }
 
 
     static void addIndexNodeReads() {
-        totalRangeNodeReads++;
+        nodeReadsEx4++;
         addNodeReads();
     }
 

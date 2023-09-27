@@ -61,7 +61,7 @@ public class Node {
         parent.children.add(i + 1, child);
     }
 
-    // updates key at index, third argument keep tracks of whether leaf is updated with new key
+    // update tree after removal of key at index
     public void updateKeyAt(int keyIndex, Float newKey, boolean leafNotUpdated, Float lowerbound) {
         // run only once to make leaf updated
         if (keyIndex >= 0 && keyIndex < keys.size() && !leafNotUpdated) {

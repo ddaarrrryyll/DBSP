@@ -35,7 +35,7 @@ public class Block {
     
 
     // GETTERS AND (NO) SETTERS
-    public int getCurSize() {
+    public int getCurrSize() {
         return this.currRecordCount;
     }
 

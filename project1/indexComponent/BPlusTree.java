@@ -81,10 +81,11 @@ public class BPlusTree {
     }
 
     // delete node and return addresses to be removed
-    public ArrayList<Address> deleteKey(Float key) {
-        Float lowerbound = 0.0f;
-        lowerbound = checkForLowerbound(key);
-        return (deleteNode(rootNode, null, -1, -1, key, lowerbound));
+    public ArrayList<Address> deleteKey(Float key, boolean ex5) {
+        Float lowerbound = checkForLowerbound(key);
+        System.out.println(lowerbound);
+        System.out.println("AA");
+        return (deleteNode(rootNode, null, -1, -1, key, lowerbound, ex5));
     }
 
     // handles an invalid node type (wrapper function)
@@ -119,61 +120,102 @@ public class BPlusTree {
     private Float checkForLowerbound(Float key) {
 
         InternalNode node = (InternalNode) rootNode;
+        Node targetNode = node;
         boolean found = false;
-        Float lowerbound = 0.0f;
-
         // find the largest key in node smaller than key
         for (int i = node.getKeyCount() - 1; i >= 0; i--) {
             if (key >= node.getKeyAt(i)) {
-                node = (InternalNode) node.getChild(i + 1);
+                targetNode = node.getChild(i + 1);
                 found = true;
                 break;
             }
-        }
+        };
         if (!found && key < node.getKeyAt(0)) {
-            node = (InternalNode) node.getChild(0);
+            targetNode = (InternalNode) node.getChild(0);
         }
 
         // loop till get leftmost key
         while (!node.getChild(0).isLeaf()) {
-            node = (InternalNode) node.getChild(0);
+            targetNode = (InternalNode) node.getChild(0);
         }
 
-        lowerbound = node.getChild(0).getKeyAt(0);
-        return (lowerbound);
-
+        if (targetNode.isLeaf()) {
+            return targetNode.getFirstKey();
+        } else {
+            return ((InternalNode) targetNode).getChild(0).getKeyAt(0);
+        }
     }
 
+    // ex5 boolean ensures we delete everything less than key also
     public ArrayList<Address> deleteNode(Node node, InternalNode parent, int parentPointerIndex, int parentKeyIndex,
-            Float key, Float lowerbound) {
-
+            Float key, Float lowerbound, boolean ex5) {
+        System.out.println(node.getFirstKey());
         ArrayList<Address> addressesToDel = new ArrayList<>();
+        // hits the target node location
         if (node.isLeaf()) {
-            LeafNode leaf = (LeafNode) node;
-            int keyIdx = node.getIdxOfKey(key, false);
-            if ((keyIdx == leaf.getKeyCount()) || (key != leaf.getKeyAt(keyIdx))) {
-                return null;
-            }
+            System.out.println("reached leaf");
+            LeafNode leafNode = (LeafNode) node;
+            if (ex5) {
+                // if we already moved from orignal node
+                boolean flag = false;
+                // will come to a point where we delete everything to the left so we need to stop
+                while (leafNode != null) {
+                    System.out.println(leafNode.getFirstKey());
+                    LeafNode temp = leafNode.getLeftSibling();
+                    ArrayList<Float> keys = leafNode.getKeys();
 
-            // found keys to delete: 1) remove key in map 2) remove idx in records
-            addressesToDel.addAll(leaf.getAddressesForKey(key));
-            leaf.removeKeyAt(keyIdx);
-            leaf.removeKeyInMap(key);
+                    System.out.println(leafNode.getKeys());
+                    int lastIdx;
+                    if (!flag) {
+                        int keyIdx = node.getIdxOfKey(key, false);
+                        if ((keyIdx == leafNode.getKeyCount()) || (!key.equals(leafNode.getKeyAt(keyIdx)))) {
+                            return null;
+                        }
+                        lastIdx = node.getIdxOfKey(key, false);
+                        flag = true;
+                    } else lastIdx = leafNode.getLastIdx();
+                    System.out.println(lastIdx);
+                    int ptr = 0;
+                    // delete all the keys in the node until the target key inclusive
+                    while (ptr <= lastIdx) {
+                        // delete the first key
+                        float targetKey = leafNode.getFirstKey();
+                        addressesToDel.addAll(leafNode.getAddressesForKey(targetKey));
+                        leafNode.removeKeyAt(0);
+                        leafNode.removeKeyInMap(targetKey);
 
-            int ptrIdx = node.getIdxOfKey(key, true);
-            keyIdx = ptrIdx - 1;
 
-            LeafNode LeafNode = (LeafNode) node;
-            Float newLowerBound = 0.0f;
-
-            if (LeafNode.getKeyCount() >= (keyIdx + 1)) {
-                newLowerBound = lowerbound;
-                List<Float> keys = LeafNode.getKeys();
-                LeafNode.updateKeyAt(ptrIdx - 1, keys.get(0), false, newLowerBound);
+                        // TODO need to update tree recursively
+                        // as you can see, we remove all the keys in the leafnodes that are < 0.35 but idk how to update the tree recursively
+                        System.out.println(leafNode.getKeys());
+                        ptr++;
+                    }
+                    leafNode = temp;
+                }
             } else {
-                newLowerBound = checkForLowerbound(LeafNode.getKeyAtIdx(keyIdx + 1));
-                List<Float> keys = LeafNode.getKeys();
-                LeafNode.updateKeyAt(ptrIdx - 1, keys.get(0), true, newLowerBound);
+                int keyIdx = node.getIdxOfKey(key, false);
+                if ((keyIdx == leafNode.getKeyCount()) || (!key.equals(leafNode.getKeyAt(keyIdx)))) {
+                    return null;
+                }
+
+                // found keys to delete: 1) remove key in map 2) remove idx in records
+                addressesToDel.addAll(leafNode.getAddressesForKey(key));
+                leafNode.removeKeyAt(keyIdx);
+                leafNode.removeKeyInMap(key);
+
+                int ptrIdx = node.getIdxOfKey(key, true);
+                keyIdx = ptrIdx - 1;
+
+                // update tree recursively
+                if (leafNode.getKeyCount() >= (keyIdx + 1)) {
+                    Float newLowerBound = lowerbound;
+                    List<Float> keys = leafNode.getKeys();
+                    leafNode.updateKeyAt(ptrIdx - 1, keys.get(0), false, newLowerBound);
+                } else {
+                    Float newLowerBound = checkForLowerbound(leafNode.getKeyAtIdx(keyIdx + 1));
+                    List<Float> keys = leafNode.getKeys();
+                    leafNode.updateKeyAt(ptrIdx - 1, keys.get(0), true, newLowerBound);
+                }
             }
         } else {
             // traverse to leaf node to find records to delete
@@ -182,8 +224,7 @@ public class BPlusTree {
             int keyIdx = ptrIdx - 1;
             // read the next level node
             Node next = nonLeafNode.getChild(ptrIdx);
-            addressesToDel = deleteNode(next, nonLeafNode, ptrIdx, keyIdx, key, lowerbound);
-
+            addressesToDel = deleteNode(next, nonLeafNode, ptrIdx, keyIdx, key, lowerbound, ex5);
         }
         // conduct necessary rebalancing
         if (node.isUnderUtilized(NODE_SIZE)) {
@@ -547,10 +588,9 @@ public class BPlusTree {
 
     public ArrayList<Address> searchValue(Node node, Float key) {
         BPTHelper.addNodeReads();
-
         if (node.isLeaf()) {
             int ptrIdx = node.getIdxOfKey(key, false);
-            if (ptrIdx >= 0 && ptrIdx < node.getKeyCount() && key == node.getKeyAt(ptrIdx)) {
+            if (ptrIdx >= 0 && ptrIdx < node.getKeyCount() && key.equals(node.getKeyAt(ptrIdx))) {
                 return ((LeafNode) node).getAddressesForKey(key);
             }
             return null;
@@ -564,13 +604,13 @@ public class BPlusTree {
 
     // -------------------------EXPERIMENT 2-------------------------
 
-    public static void ex2(BPlusTree tree) {
+    public static void ex2(BPlusTree bPlusTree) {
         System.out.println("\nEXPERIMENT 2: Build a B+Tree on FG_PCT_home by inserting the records sequentially:");
-        BPTHelper treeHelper = new BPTHelper();
+        BPTHelper bPlusTreeHelper = new BPTHelper();
         System.out.println("Parameter n: " + NODE_SIZE);
-        System.out.printf("No. of Nodes in B+ tree: %d\n", treeHelper.getNodeCount());
-        System.out.printf("No. of Levels in B+ tree: %d\n", tree.getDepth(tree.getRoot()));
-        System.out.println("Content of the root node: " + BPlusTree.getRoot().keys);
+        System.out.printf("No. of Nodes in B+ tree: %d\n", bPlusTreeHelper.getNodeCount());
+        System.out.printf("No. of Levels in B+ tree: %d\n", bPlusTree.getDepth(bPlusTree.getRoot()));
+        System.out.println("Content of the root node: " + bPlusTree.getRoot().keys);
     }
 
     private int getDepth(Node node) {
@@ -585,150 +625,120 @@ public class BPlusTree {
 
     // -------------------------EXPERIMENT 3-------------------------
 
-    // /**
-    //  * Function for Experiment 3 of Project 1 (Search Query for numVotes equal to '500')
-    //  * 
-    //  * @param db the database used for the experiment
-    //  * @param tree the B+ Tree used for the experiment
-    //  */
-    // public static void experimentThree(Database db, BPlusTree tree) {
-    //     System.out.println("\n----------------------EXPERIMENT 3-----------------------");
-    //     BPTHelper performance = new BPTHelper();
-    //     System.out.println("Movies with the 'numVotes' equal to 500: ");
+    public static void ex3(Database db, BPlusTree bPlusTree) {
+        System.out.println("\nEXPERIMENT 3: Retrieve those records with the \"FG_PCT_home\" equal to 0.5:");
+        BPTHelper performance = new BPTHelper();
+        long startTime = System.nanoTime();
+        ArrayList<Address> addresses = bPlusTree.getAddresses(0.500f);
+        long endTime = System.nanoTime();
+        float totalFG3_PCT_home = 0;
+        int count = 0;
+        ArrayList<Record> res = new ArrayList<>();
+        if (addresses != null) {
+            for (Address address : addresses) {
+                Record rec = db.getRecord(address);
+                res.add(rec);
+                totalFG3_PCT_home += rec.getFg3PctHome();
+                count++;
+            }
+        }
 
-    //     long startTime = System.nanoTime();
-    //     ArrayList<Address> resultAdd = tree.getIdxOfKey(500);
-    //     long endTime = System.nanoTime();
-    //     double totalAverageRating = 0;
-    //     int totalCount = 0;
-    //     ArrayList<Record> results = new ArrayList<>();
-    //     if (resultAdd != null) {
-    //         for (Address add : resultAdd) {
-    //             Record record = db.getRecord(add);
-    //             System.out.print("\n" + record);
-    //             results.add(record);
-    //             totalAverageRating += record.getAverageRating();
-    //             totalCount++;
-    //         }
-    //     }
-    //     System.out.printf("\n\nNo. of Index Nodes the process accesses: %d\n", performance.getNodeReads());
-    //     System.out.printf("No. of Data Blocks the process accesses: %d\n", db.getBlockAccesses());
-    //     System.out.printf("Average of 'averageRating's' of the records accessed: %.2f\n",
-    //             (double) totalAverageRating / totalCount);
-    //     long duration = (endTime - startTime); // divide by 1000000 to get milliseconds.
-    //     System.out.printf("Running time of retrieval process: %d nanoseconds\n", duration);
-    //     startTime = System.nanoTime();
-    //     int bruteForceAccessCount = db.getBlocksAccessedByForce(500, 500);
-    //     endTime = System.nanoTime();
-    //     System.out.printf("Number of Data Blocks Accessed by Brute Force (numVotes = 500): %d", bruteForceAccessCount);
-    //     System.out.printf("\nLinear Time Accessed by Brute Force (numVotes = 500): %d", endTime - startTime);
-    //     System.out.printf("\nNo. of Data Blocks accessed reduced in total: %d\n ", db.getBlockAccessReduced());
-    // }
-
-    // -------------------------EXPERIMENT 4-------------------------
-    public ArrayList<Address> ex4SearchFunction(Float minKey, Float maxKey) {
-        return ex4Helper(this.getRoot(), minKey, maxKey);
+        System.out.printf("No. of index nodes accessed by process: %d", performance.getNodeReads());
+        System.out.printf("\nNo. of data blocks accessed by process: %d", db.getBlockAccesses());
+        System.out.printf("\n(Index Search) No. of records found: %d", count);
+        System.out.printf("\nAverage of FG3_PCT_home of returned records: %.2f", count > 0 ? totalFG3_PCT_home/count : 0);
+        // running time = endTime - startTime (in nanoseconds)
+        System.out.printf("\n\tRunning time: %d ns\n", endTime-startTime);
+        // point 5: brute-force searching
+        startTime = System.nanoTime();
+        int blkAccesses = db.bruteForceSearch(0.5f, 0.5f);
+        endTime = System.nanoTime();
+        System.out.printf("\nNo. of data blocks accessed by bruteforce: %d", blkAccesses);
+        System.out.printf("\n\tRunning Time: %d ns", endTime-startTime);
     }
 
-    public static ArrayList<Address> ex4Helper(Node node, Float minKey, Float maxKey) {
-        int ptr;
-        ArrayList<Address> resultList = new ArrayList<>();
+
+    // -------------------------EXPERIMENT 4-------------------------
+
+    public static void ex4(Database db, BPlusTree bPlusTree) {
+        System.out.println("\nEXPERIMENT 4: Retrieve those records with 0.6 <= \"FG_PCT_home\" <= 1:");
+        BPTHelper performance = new BPTHelper();
+        long startTime = System.nanoTime();
+        ArrayList<Address> addresses = bPlusTree.getAddressesForKeysBetween(bPlusTree.getRoot(), 0.6f, 1f);
+        long endTime = System.nanoTime();
+        double totalFG3_PCT_home = 0;
+        int count = 0;
+        ArrayList<Record> res = new ArrayList<>();
+        if (addresses != null) {
+            for (Address address : addresses) {
+                Record rec = db.getRecord(address);
+                res.add(rec);
+                totalFG3_PCT_home += rec.getFg3PctHome();
+                count++;
+            }
+        }
+        System.out.printf("No. of index nodes accessed by process: %d", performance.getNodeReadsEx4());
+        System.out.printf("\nNo. of data blocks accessed by process: %d", db.getBlockAccesses());
+        System.out.printf("\n(Index Search) No. of records found: %d", count);
+        System.out.printf("\nAverage of FG3_PCT_home of returned records: %.2f", count > 0 ? totalFG3_PCT_home/count : 0);
+        // running time = endTime - startTime (in nanoseconds)
+        System.out.printf("\n\tRunning time: %d ns\n", endTime-startTime);
+        // point 5 brute-force searching
+        startTime = System.nanoTime();
+        int blkAccesses = db.bruteForceSearch(0.6f, 1.0f);
+        endTime = System.nanoTime();
+        endTime = System.nanoTime();
+        System.out.printf("\nNo. of data blocks accessed by bruteforce: %d", blkAccesses);
+        System.out.printf("\n\tRunning Time: %d ns", endTime-startTime);
+    }
+
+    public ArrayList<Address> getAddressesForKeysBetween(Node node, float minKey, float maxKey) {
         BPTHelper.addIndexNodeReads();
-        // only leaf node is useful to get addresses
-        if (node.isLeaf()) {
-            ptr = node.getIdxOfKey(minKey, false);
-            LeafNode leaf = (LeafNode) node;
+        // traverse until leaf
+        if (!node.isLeaf()) {
+            int ptr = node.getIdxOfKey(minKey, true);
+            Node childNode = ((InternalNode) node).getChild(ptr);
+            return getAddressesForKeysBetween(childNode, minKey, maxKey);
+        } else {
+            ArrayList<Address> addresses = new ArrayList<>();
+            int ptr = node.getIdxOfKey(minKey, false);
+            LeafNode leafNode = (LeafNode) node;
             while (true) {
-                if (ptr == leaf.getKeyCount()) {
-                    if (leaf.getRightSibling() == null) break;
-                    leaf = (LeafNode) (leaf.getRightSibling());
+                if (ptr == leafNode.getKeyCount()) {
+                    if (leafNode.getRightSibling() == null) break;
+                    leafNode = (LeafNode) leafNode.getRightSibling();
                     BPTHelper.addIndexNodeReads();
                     ptr = 0;
                 }
-                if (leaf.getKeyAtIdx(ptr) > maxKey) break;
-                Float key = leaf.getKeyAtIdx(ptr);
-                resultList.addAll(leaf.getAddressesForKey(key));
+                if (leafNode.getKeyAt(ptr) > maxKey) break;
+                Float key = leafNode.getKeyAt(ptr);
+                addresses.addAll(leafNode.getAddressesForKey(key));
                 ptr++;
             }
-            return (resultList.size() > 0 ? resultList : null);
-        } else {
-            ptr = node.getIdxOfKey(minKey, true);
-            Node childNode = ((InternalNode) node).getChild(ptr);
-            return (ex4Helper(childNode, minKey, maxKey));
+            return (addresses.isEmpty() ? null : addresses);
         }
     }
-    
-
-    // /**
-    //  * Function for Experiment 4 of Project 1 (Range Query Search for numVotes of '30,000' to '40,000')
-    //  *
-    //  * @param db the database used for the experiment
-    //  * @param tree the B+ Tree used for the experiment
-    //  */
-    // public static void experimentFour(Database db, BPlusTree tree) {
-    //     System.out.println("\n\n----------------------EXPERIMENT 4-----------------------");
-    //     BPTHelper performance = new BPTHelper();
-    //     System.out.println("Movies with the 'numVotes' from 30,000 to 40,000, both inclusively: ");
-    //     long startTime = System.nanoTime();
-    //     ArrayList<Address> resultAdd = tree.rangeSearch(30000, 40000);
-    //     long endTime = System.nanoTime();
-    //     double totalAverageRating = 0;
-    //     int totalCount = 0;
-    //     ArrayList<Record> results = new ArrayList<>();
-    //     if (resultAdd != null) {
-    //         for (Address add : resultAdd) {
-    //             Record record = db.getRecord(add);
-    //             System.out.print("\n From Indexing" + record);
-    //             results.add(record);
-    //             totalAverageRating += record.getAverageRating();
-    //             totalCount++;
-    //         }
-    //     }
-    //     System.out.printf("\n\nNo. of Index Nodes the process accesses: %d\n", performance.getIndexNodeReads());
-    //     System.out.printf("No. of Data Blocks the process accesses: %d\n", db.getBlockAccesses());
-    //     System.out.printf("Average of 'averageRating's' of the records accessed: %.2f",
-    //             (double) totalAverageRating / totalCount);
-    //     long duration = (endTime - startTime); // divide by 1000000 to get milliseconds.
-    //     System.out.printf("\nRunning time of retrieval process: %d nanoseconds\n", duration);
-    //     startTime = System.nanoTime();
-    //     int bruteForceAccessCount = db.getBlocksAccessedByForce(30000, 40000);
-    //     endTime = System.nanoTime();
-    //     System.out.printf("Number of Data Blocks Accessed by Brute Force (30000<=numVotes<=40000): %d",
-    //             bruteForceAccessCount);
-    //     System.out.printf("\nLinear Time Accessed by Brute Force (30000<=numVotes<=40000): %d", endTime - startTime);
-    //     System.out.printf("\nNo. of Data Blocks accessed reduced in total: %d\n ", db.getBlockAccessReduced());
-    // }
-
 
     // -------------------------EXPERIMENT 5-------------------------
-    // /**
-    //  * Function for Experiment 5 of Project 1 (Deletion for numVotes equal to value '1000')
-    //  * 
-    //  * @param db the database used for the experiment
-    //  * @param tree the B+ Tree used for the experiment
-    //  */
-    // public static void experimentFive(Database db, BPlusTree tree) {
-    //     System.out.println("\n\n----------------------EXPERIMENT 5-----------------------");
-    //     BPTHelper performance = new BPTHelper();
-    //     System.out.println("-- Deleting all records with 'numVotes' of 1000 -- ");
-    //     long startTime = System.nanoTime();
-    //     ArrayList<Address> deletedAdd = tree.deleteKey(1000);
-
-    //     db.deleteRecord(deletedAdd);
-    //     long endTime = System.nanoTime();
-    //     System.out.printf("No. of Nodes in updated B+ tree: %d\n", performance.getNodeCount());
-    //     tree.countLevel(tree.getRoot());
-    //     System.out.printf("No. of Levels in updated B+ tree: %d\n", performance.getDepth());
-    //     System.out.printf("\nContent of the root node in updated B+ tree: %s\n", BPlusTree.getRoot().keys);
-    //     long duration = (endTime - startTime); // divide by 1000000 to get milliseconds.
-    //     System.out.printf("Running time of retrieval process: %d nanoseconds\n", duration);
-    //     System.out.println("Number of Data Blocks Accessed by Brute Force (numVotes=1000):");
-    //     startTime = System.nanoTime();
-    //     int bruteForceAccessCount = db.getBlocksAccessedByForce(1000, 1000);
-    //     endTime = System.nanoTime();
-    //     System.out.printf("Number of Data Blocks Accessed by Brute Force (numVotes = 1000): %d", bruteForceAccessCount);
-    //     System.out.printf("\nLinear Time Accessed by Brute Force (numVotes = 1000): %d", endTime - startTime);
-    //     System.out.printf("\nNo. of Data Blocks accessed reduced in total: %d\n ", db.getBlockAccessReduced());
-    // }
+    
+    public static void ex5(Database db, BPlusTree bPlusTree) {
+        System.out.println("\nEXPERIMENT 5: Delete those records with \"FG_PCT_home\" <= 0.35:");
+        BPTHelper performance = new BPTHelper();
+        long startTime = System.nanoTime();
+        ArrayList<Address> addressesToBeDeleted = bPlusTree.deleteKey(0.35f, true);
+        db.deleteRecord(addressesToBeDeleted);
+        long endTime = System.nanoTime();
+        System.out.printf("No. of Nodes in updated B+ tree: %d\n", performance.getNodeCount());
+        System.out.printf("No. of Levels in updated B+ tree: %d\n", bPlusTree.getDepth(bPlusTree.getRoot()));
+        System.out.printf("\nContent of the root node in updated B+ tree: %s\n", BPlusTree.getRoot().keys);
+        long duration = (endTime - startTime); // divide by 1000000 to get milliseconds.
+        System.out.printf("Running time of retrieval process: %d nanoseconds\n", duration);
+        System.out.println("Number of Data Blocks Accessed by Brute Force (numVotes=1000):");
+        startTime = System.nanoTime();
+        int bruteForceAccessCount = db.bruteForceSearch(0.0f, 0.35f);
+        endTime = System.nanoTime();
+        System.out.printf("Number of Data Blocks Accessed by Brute Force (numVotes = 1000): %d", bruteForceAccessCount);
+        System.out.printf("\nLinear Time Accessed by Brute Force (numVotes = 1000): %d", endTime - startTime);
+    }
 
 }

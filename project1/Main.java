@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 
 public class Main {
-    private static final int DEFAULT_MAX_DISK_CAPACITY = 500 * (int) (Math.pow(10, 6));
+    private static final int DEFAULT_MAX_DISK_CAPACITY = 200 * (int) (Math.pow(10, 6));
 
     public static void main(String[] args) throws Exception {
 
@@ -16,7 +16,7 @@ public class Main {
         File file = new File(String.valueOf(filePath));
         if (file.exists()) {
             System.out.println("Reading data from " + String.valueOf(filePath));
-            int diskSize = getDiskInput();
+            int diskSize = DEFAULT_MAX_DISK_CAPACITY;
             Parser.readTXTFile(String.valueOf(filePath), diskSize);
         } else if (!file.exists()) {
             Scanner sc = new Scanner(System.in);
@@ -25,38 +25,11 @@ public class Main {
             File newFileCheck = new File(String.valueOf(filePath));
             if (newFileCheck.exists()) {
                 System.out.println("Reading data from " + String.valueOf(filePath));
-                int diskSize = getDiskInput();
+                int diskSize = DEFAULT_MAX_DISK_CAPACITY;
                 Parser.readTXTFile(String.valueOf(filePath), diskSize);
             }
         } else {
             throw new FileNotFoundException("File does not exist!");
         }
-    }
-
-    // TODO CHANGE TO USE 200MB BY DEFAULT
-    private static int getDiskInput() {
-        int n = 0;
-        Scanner sc = new Scanner(System.in);
-        while (n < 3) {
-            try {
-                System.out.print("Enter Disk Size (size must be between 200-500MB): ");
-                int diskSize = sc.nextInt();
-                if (diskSize < 200 || diskSize > 500) {
-                    n++;
-                } else {
-                    return diskSize * (int) (Math.pow(10, 6));
-                }
-            } catch (IndexOutOfBoundsException e) {
-                System.out.printf("No argument detected, falling back to default disk size: %d\n", DEFAULT_MAX_DISK_CAPACITY);
-                break;
-            } catch (NumberFormatException e) {
-                System.out.printf("Invalid disk size input detected, falling back to default disk size: %d\n", DEFAULT_MAX_DISK_CAPACITY);
-                break;
-            } catch (Exception e) {
-                System.out.printf("Something went wrong, falling back to default disk size: %d\n", DEFAULT_MAX_DISK_CAPACITY);
-                break;
-            }
-        }
-        return DEFAULT_MAX_DISK_CAPACITY;
     }
 }
