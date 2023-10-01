@@ -74,11 +74,12 @@ public class Node {
                     parent.replaceKeyAt(childIndex - 1, keys.get(0));
                 }
                 parent.updateKeyAt(childIndex - 1, newKey, false, lowerbound);
+                // System.out.println(parent.keys);
+                // System.out.println(parent.getChild(0).keys);
             }
         } else if (parent != null && parent.isLeaf()) {
             parent.updateKeyAt(keyIndex, newKey, false, lowerbound);
         }
-
     }
 
     // boolean to check if node is not valid / underutilised
@@ -172,7 +173,6 @@ public class Node {
         } else {
             // this node is root (no parent)
             InternalNode newRoot = new InternalNode();
-            BPTHelper.addNode();
             newRoot.keys = new ArrayList<Float>();
             // add sibling's key to root
             newRoot.keys.add(sibling.getKeyAt(0));
@@ -286,7 +286,6 @@ public class Node {
     
     public void createFirstParentNode(LeafNode newNode) {
         InternalNode newParent = new InternalNode();
-        BPTHelper.addNode();
         newParent.keys = new ArrayList<Float>();
         newParent.addChild(this);
         newParent.addChild(newNode);
@@ -297,7 +296,6 @@ public class Node {
 
     public void createRootNode(InternalNode newNode) {
         InternalNode newParent = new InternalNode();
-        BPTHelper.addNode();
         newParent.keys = new ArrayList<Float>();
         newParent.addChild(this);
         newParent.addChild(newNode);
@@ -310,7 +308,6 @@ public class Node {
     // split itself (this node) into two, and return the sibling
     public LeafNode splitLeafNodeHelper(Float key, Address addr) {
         LeafNode newNode = new LeafNode();
-        BPTHelper.addNode();
         ((LeafNode) this).addresses = new ArrayList<Address>();
         ((LeafNode) this).addresses.add(addr);
         ((LeafNode) this).keyAddrMap.put(key, ((LeafNode) this).addresses);
@@ -355,7 +352,6 @@ public class Node {
 
         InternalNode currentParent = (InternalNode) (this);
         InternalNode newParent = new InternalNode();
-        BPTHelper.addNode();
         newParent.keys = new ArrayList<Float>();
 
         Float keyToSplitAt = currentParent.getKeyAt(minInternalNodeSize);

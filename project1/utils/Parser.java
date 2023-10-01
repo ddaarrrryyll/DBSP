@@ -4,7 +4,7 @@ import indexComponent.BPlusTree;
 
 import java.util.Date;
 import java.util.Scanner;
-
+import java.util.concurrent.TimeUnit;
 import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -15,7 +15,6 @@ import storageComponent.Database;
 
 public class Parser {
     public static final int BLOCK_SIZE = 400;
-    public static final int OVERHEAD = 8; // TODO may not need
     public static final int POINTER_SIZE = 8; // pointer size for 64 bit systems = 8 bytes
     public static final int KEY_SIZE = 4; // type(key) = float 4 bytes
     private static int counter = 0;
@@ -43,6 +42,7 @@ public class Parser {
                     // }
                     Address addr = db.writeRecordToStorage(row);
                     float key = row.getFgPctHome();
+                    // do multiple inserts, another option is bulk loading
                     bPlusTree.insertKeyAddrPair(key, addr);
                 } catch (Exception e) { // handles empty cells + parse exception
                     invalidDataCount++;
@@ -52,46 +52,22 @@ public class Parser {
             reader.close();
             System.out.println(invalidDataCount + " tuples skipped due to invalid data");
             
+            System.out.println("Running experiments 1 - 5 sequentially... (please wait for 1-2s before each experiment executes)");
             try {
-                int experimentNum = 0;
-                Scanner sc = new Scanner(System.in);
-                while (true) {
-                    try {
-                        System.out.println("\nChoose Experiment (1-5):");
-                        experimentNum = sc.nextInt();
-                        if (experimentNum > 0 && experimentNum < 6) {
-                            break;
-                        } else {
-                            System.out.println("\nPlease only input 1-5!");
-                        }
-                    } catch (Exception e) {
-                        System.out.println("\nPlease only input 1-5!");
-                        break;
-                    }
-                }
-                
-                switch (experimentNum) {
-                    case 1:
-                        db.ex1();
-                        break;
-                    case 2:
-                        BPlusTree.ex2(bPlusTree);
-                        break;
-                    case 3:
-                        BPlusTree.ex3(db, bPlusTree);
-                        break;
-                    case 4:
-                        BPlusTree.ex4(db, bPlusTree);
-                        break;
-                    case 5:
-                        BPlusTree.ex5(db, bPlusTree);
-                        break;
-                }
-
-            } catch (Exception e) {
-
+                db.ex1();
+                TimeUnit.SECONDS.sleep(2);
+                BPlusTree.ex2(bPlusTree);
+                TimeUnit.SECONDS.sleep(2);
+                BPlusTree.ex3(db, bPlusTree);
+                TimeUnit.SECONDS.sleep(2);
+                BPlusTree.ex4(db, bPlusTree);
+                TimeUnit.SECONDS.sleep(2);
+                bPlusTree.ex5(db, bPlusTree);
+            } catch (InterruptedException e) {
+                System.out.println("User interrupted program, exiting run time");
             }
-
+            System.out.println("\n@@@@@ Execution complete @@@@@\n");
+            
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -120,7 +120,7 @@ public class Database {
             }
         }
         if (res.isEmpty()) {
-            System.out.printf("\nNo records within range [%0.2f, %0.2f] found in db", fg_pct_home, fg_pct_home_upper_bound);
+            System.out.printf("\nNo records within range [%.2f, %.2f] found in db", fg_pct_home, fg_pct_home_upper_bound);
         } else{
             System.out.printf("\n(Bruteforce) No. of records found: %d", res.size());
         }
