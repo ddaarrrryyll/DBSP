@@ -16,12 +16,6 @@ public class Database {
 
     private static int blockAccesses = 0;
 
-    // TODO MAYBE REMOVE
-    // an integer representing the number of block accesses that were reduced due to the presence
-    // of the LRU cache.
-    private int blockAccessReduced = 0;
-  
-
     public Database(int diskSize, int blkSize) {
         this.diskSize = diskSize;
         this.blkSize = blkSize;
@@ -73,12 +67,6 @@ public class Database {
         Block block = blocks[blockNumber];
         blockAccesses++;
         return block;
-    }
-
-    
-    // TODO IDK MAYBE REMOVE
-    public int getBlockAccessReduced() {
-        return blockAccessReduced;
     }
 
     public Record getRecord(Address add) {
