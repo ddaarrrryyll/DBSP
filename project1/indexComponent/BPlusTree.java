@@ -10,7 +10,7 @@ import utils.Parser;
 
 public class BPlusTree {
 
-    static final int NODE_SIZE = Parser.BLOCK_SIZE/(Parser.POINTER_SIZE+Parser.KEY_SIZE);
+    static final int NODE_SIZE = (Parser.BLOCK_SIZE-Parser.POINTER_SIZE)/(Parser.POINTER_SIZE+Parser.KEY_SIZE);
     static Node rootNode;
     Node nodeToInsertTo;
 
@@ -606,13 +606,13 @@ public class BPlusTree {
         System.out.printf("\n(Index Search) No. of records found: %d", count);
         System.out.printf("\nAverage of FG3_PCT_home of returned records: %.2f", count > 0 ? totalFG3_PCT_home/count : 0);
         // running time = endTime - startTime (in nanoseconds)
-        System.out.printf("\n\tRunning time: %d ns\n", endTime-startTime);
+        System.out.printf("\n\tRunning time: %.3f ms", (endTime - startTime) / 1_000_000.0);
         // point 5: brute-force searching
         startTime = System.nanoTime();
         int blkAccesses = db.bruteForceSearch(0.5f, 0.5f);
         endTime = System.nanoTime();
         System.out.printf("\nNo. of data blocks accessed by bruteforce: %d", blkAccesses);
-        System.out.printf("\n\tRunning Time: %d ns", endTime-startTime);
+        System.out.printf("\n\tRunning Time: %.3f ms", (endTime - startTime) / 1_000_000.0);
     }
 
 
@@ -640,14 +640,14 @@ public class BPlusTree {
         System.out.printf("\n(Index Search) No. of records found: %d", count);
         System.out.printf("\nAverage of FG3_PCT_home of returned records: %.2f", count > 0 ? totalFG3_PCT_home/count : 0);
         // running time = endTime - startTime (in nanoseconds)
-        System.out.printf("\n\tRunning time: %d ns\n", endTime-startTime);
+        System.out.printf("\n\tRunning time: %.3f ms", (endTime - startTime) / 1_000_000.0);
         // point 5 brute-force searching
         startTime = System.nanoTime();
         int blkAccesses = db.bruteForceSearch(0.6f, 1.0f);
         endTime = System.nanoTime();
         endTime = System.nanoTime();
         System.out.printf("\nNo. of data blocks accessed by bruteforce: %d", blkAccesses);
-        System.out.printf("\n\tRunning Time: %d ns", endTime-startTime);
+        System.out.printf("\n\tRunning Time: %.3f ms", (endTime - startTime) / 1_000_000.0);
     }
 
     public ArrayList<Address> getAddressesForKeysBetween(Node node, float minKey, float maxKey) {
@@ -694,14 +694,14 @@ public class BPlusTree {
         System.out.printf("No. of Nodes in updated B+ tree: %d\n", bPlusTree.countNodes(bPlusTree.getRoot()));
         System.out.printf("No. of Levels in updated B+ tree: %d\n", bPlusTree.getDepth(bPlusTree.getRoot()));
         System.out.printf("\nContent of the root node of the updated B+ tree(only the keys): %s\n", BPlusTree.getRoot().keys);
-        System.out.printf("\tRunning time: %d ns\n", endTime-startTime);
+        System.out.printf("\tRunning time: %.3f ms", (endTime - startTime) / 1_000_000.0);
 
         System.out.print("\nBrute-force range deletion:");
         startTime = System.nanoTime();
         int bruteForceAccessCount = db.bruteForceSearch(0.0f, 0.35f);
         endTime = System.nanoTime();
         System.out.printf("\nNumber of data blocks that would be accessed by a brute-force: %d\n", bruteForceAccessCount);
-        System.out.printf("\tRunning time: %d ns\n", endTime - startTime);
+        System.out.printf("\tRunning time: %.3f ms", (endTime - startTime) / 1_000_000.0);
     }
 
     public static ArrayList<Float> ex5Helper(Node node, float lowerBound, float upperBound) {

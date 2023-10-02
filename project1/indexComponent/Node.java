@@ -97,12 +97,7 @@ public class Node {
         if (!isLeaf()) return getKeyCount() - 1 >= maxKeyCount / 2;
         return getKeyCount() - 1 >= (maxKeyCount + 1) / 2;
     }
-    // TODO CHANGE THIS
-    /** 
-     * Inserts new node to parent node in ascending order based on key values.
-     * 
-     * @param newNode is the leaf node to be inserted to the parent node.
-     */
+    
     public void insertNewNodeToParent(LeafNode newNode) {
         int index = 0;
         boolean insertedNode = false;
