@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 
 public class Main {
-    private static final int DEFAULT_MAX_DISK_CAPACITY = 200 * (int) (Math.pow(10, 6));
+    private static final int DEFAULT_MAX_DISK_CAPACITY = 100 * (int) (Math.pow(10, 6));
 
     public static void main(String[] args) throws Exception {
 
